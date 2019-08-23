@@ -536,13 +536,38 @@ redisTemplate.randomKey();
 //获取key的剩余过期时间, 返回值为long型
 redisTemplate.getExpire(key);
 
-//持久化保存
+//持化保存
 redisTemplate.persist(key);
-
-
 ```
 
 
 
+## 四、Redis持久化
+
+Redis是一种内存数据库, 当服务关闭后,  里面的数据就会清空, Redis提供了持久化的方案, 可以将数据保存在硬盘里。
+
+#### 1. RDB持久化机制
+
+默认方式, 不需要进行配置, 在一定时间间隔中, 检测key的变化情况, 然后持久化数据
+
+默认配置如下, 可以进行相应修改:
+
++ save 900 1     在900秒内, 有1个或以上key发生变化, 则持久化数据
++ save 300 10   在300秒内, 有10个或以上key发生变化, 则持久化数据
++ save 60 10000  在60秒类, 如果有10000个或以上key发生变化, 则持久化数据
+
+配置完成后需要通过命令行启动Redis服务: 找到在radis文件目录, 输入`redis-server.exe redis.windows.conf`
 
 
+
+#### 2. AOF持久化机制
+
+日志记录的方式, 每一次命令操作后都会持久化数据.
+
+使用方法: 在redis.windows.conf中修改`appendonly no` 为 `appendonly yes`
+
+其他配置: 
+
++ appendsync always : 每一次操作都持久化
++ appendsync everysec : 每一秒持久化一次
++ appendsync no : 不持久化
