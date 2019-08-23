@@ -149,7 +149,7 @@ public class Controller{
         <!--th:xxx 替换掉原来的属性 如这里就是替换原来的href属性-->
         <a href="#" th:href="@{/hello}">
         
-        <!--遍历集合, 生成两个<h1>标签-->
+        <!--遍历集合, 每一次都生成一个<h1>标签-->
         <h1 th:each="name:${array}" th:text="${name}"></h1>
         
         <!--当满足条件时才显示该标签, 注意#strings是引用内置工具对象, 不要省略#-->
@@ -362,7 +362,7 @@ public class MessageSourceAutoConfiguration {
 	private String basename = "messages";  
 ```
 
-通过源码我们可以发现, Spring Boot默认基础名为message, 我们可以在配置文件中修改该基础名
+通过源码我们可以发现, Spring Boot默认基础名为messages, 我们可以在配置文件中修改该基础名
 
 ```properties
 spring.messages.basename=i18n.login
@@ -402,11 +402,6 @@ public class MyLocaleResolver implements LocalResolver{
 ```java
 @Configuration
 public class MyMvcConfig implements WebMvcConfigurer{
-
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/atguigu").setViewName("success");
-    }
     
     @Bean
     public MyLocaleResolver getLocale(){
@@ -440,16 +435,6 @@ public class MyInterceptor implements HandlerInterceptor{
 ```java
 @Configuration
 public class MyMvcConfig implements WebMvcConfigurer{
-
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/atguigu").setViewName("success");
-    }
-    
-    @Bean
-    public MyLocaleResolver getLocale(){
-        return new MyLocaleResolver();
-    }
     
     @Override
     public void addInterceptor(InterceptorRegistry registry){
@@ -645,7 +630,7 @@ Servlet容器就是Tomcat、Jetty、Jboss等容器软件. Spring Boot为我们�
 
 ```properties
 server.port=8081
-server.context-path=/crud
+server..servlet.context-path=/crud
 
 server.tomcat.uri-encoding=UTF-8
 
