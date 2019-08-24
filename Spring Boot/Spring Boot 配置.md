@@ -91,8 +91,12 @@ YAML和properties配置文件都支持占位符的使用
 1. 随机数占位符
 
 ```properties
-${random.value}、${random.int}、${random.long}、${random.uuid}
-${random.int(10)}、${random.int[1024,65536]}
+${random.uuid}
+${random.value} #类似于uuid, 只是没有-
+${random.int}
+${random.long}
+${random.int(10)} #生成10以内的随机数
+${random.int[1024,65536]}
 ```
 
 2. 将之前配置的值作为占位符
@@ -137,6 +141,7 @@ person.dog.age=2
 	使用@ConfigurationProperties注解, 将配置文件的对应属性与该对象属性一一映射
 	prefix属性指定映射配置文件中哪个数据
 	使用该注解的前提是该对象必须在Spring容器中
+	该注解还可以用在方法上, 将配置文件内容封装到方法返回值对象中
 */
 @Conponent
 @ConfigurationProperties(prefix="person")
