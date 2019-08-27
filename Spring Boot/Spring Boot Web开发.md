@@ -58,7 +58,7 @@ classpath:/public/
 4. **自定义静态资源存储路径**
 
 ```properties
-psring.resources.static-locations=[classpath:/css/, classpath:/js/]
+spring.resources.static-locations=[classpath:/css/, classpath:/js/]
 ```
 
 
@@ -549,7 +549,7 @@ public class BasicErrorController extends AbstractErrorController {
 
 #### 2. 自定义错误页面
 
-1. 如果template目录下有对应错误页面, 则使用该错误页面. 错误页面应该放在`template/error`目录下, 名字为状态码. 如: 404.html、4xx.html, Spring Boot就会根据相应错误跳转到对应页面.
+1. 如果template目录下有对应错误页面, 则使用该错误页面. 错误页面应该放在`templates/error`目录下, 名字为状态码. 如: 404.html、4xx.html, Spring Boot就会根据相应错误跳转到对应页面.
 2. 如果template目录下没有对应页面, 则在静态资源路径下找. 命名规则一样, 也必须放在error文件夹下
 3. 如果都没有找到, 则使用默认页面
 
@@ -738,6 +738,6 @@ public class ServletInitializer extends SpringBootServletInitializer {
 3. 可以配置`spring.thymleaf.cache=false`禁用模板引擎缓存, 禁用后按`ctrl+F9`重新编译该页面, 就可以直接使变化生效, 不用重启服务器了.
 4. 视图在多级目录下 `return "xx/xxx"`
 5. Spring Boot封装请求参数时, 时间格式默认为dd/MM/yyyy, 可以通过`spring.mvc.date-format=yyyy-MM-dd`来修改默认时间格式
-6. Thymleaf中多个${}等表达式用 + 链接
+6. ~~Thymleaf中多个${}等表达式用 + 链接~~
 7. 一个添加页面表单, 也可用于修改页面. 所以添加页面可以和修改页面共用, 不过添加页面表单不需要数据, 修改页面需要表单数据. 直接通过`th:value="${user}!=null?${user.name}"`来根据需要在表单上显示或不显示数据
 
