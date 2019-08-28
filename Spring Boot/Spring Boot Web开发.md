@@ -55,7 +55,7 @@ classpath:/public/
 
 默认页面和图标的存放路径和访问路径同上. 不过默认页面名字必须为index.html, 图标名字必须为favicon.ico
 
-4. **自定义静态资源存储路径**
+4. **自定义静态资源存储路径(会替换默认路径)**
 
 ```properties
 spring.resources.static-locations=[classpath:/css/, classpath:/js/]
