@@ -543,6 +543,14 @@ redisTemplate.persist(key);
 
 
 
+#### 4. 注意事项
+
+1. 使用RedisTemplate保存对象, 对象需要`implements serilizer`. 如果保存的是对象, 会发现设置的key的前面还有一串符号, 这是由于序列化对象引起的. 所以一般我们都把对象转化成json数据再进行保存. 我们可以使用转json工具来转换, 也可以修改RedisTemplate的默认序列化器.
+
+
+
+
+
 ## 四、Redis持久化
 
 Redis是一种内存数据库, 当服务关闭后,  里面的数据就会清空, Redis提供了持久化的方案, 可以将数据保存在硬盘里。

@@ -166,7 +166,8 @@ public interface DepartmentMapper {
 }
 ```
 
-4. 添加`ConfigurationCustomizer`自定义配置
+4. 使用`@Autowired`自动注入该接口, 即可调用相关方法.
+5. 添加`ConfigurationCustomizer`自定义配置
 
 ```java
 @org.springframework.context.annotation.Configuration
@@ -192,6 +193,8 @@ public class MyBatisConfig {
 mybatis:
   config-location: classpath:mybatis/mybatis-config.xml 指定全局配置文件的位置
   mapper-locations: classpath:mybatis/mapper/*.xml  指定sql映射文件的位置
+  
+mybatis.configuration.map-underscore-to-camel-case=true 开启驼峰命名匹配
 ```
 
 
