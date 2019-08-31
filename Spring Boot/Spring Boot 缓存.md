@@ -141,10 +141,25 @@ public class UserService{
 
 #### 1.实现步骤
 
-1. 导入相关依赖`spring-boot-data-redis`
+1. 导入相关依赖`spring-boot-starter-data-redis`
     导入依赖后, CacheManager由默认变成RedisCacheManager
     默认Cache变成RedisCache, RedisCache通过操作redis来缓存数据
-2. 配置 `spring.redis.host`
+2. 配置Redis
+
+```yaml
+spring:
+	redis:
+		host: 
+		port:
+		password:
+		timeout:
+		jedis:
+			pool:
+				max-actrive:
+				max-wait:
+				max-idle:
+				min-idle:
+```
 
 3. 使用上述注解进行操作即可
 

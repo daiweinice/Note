@@ -2,7 +2,7 @@
 
 ## 一、全局配置文件
 
-Spring Boot项目的resources目录下有一个application.properties或者application.yml文件, 它就是Spring Boot的全局配置文件, 用于修改自动配置的内容.
+Spring Boot项目的resources目录下有一个`application.properties`或者`application.yml`文件, 它就是Spring Boot的全局配置文件, 用于修改自动配置的内容.
 
 
 
