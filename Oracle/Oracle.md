@@ -61,7 +61,7 @@ drop tablespace dw;
 ```sql
 create user username
 identified by password
-default tablespace dw
+default tablespace dw;
 
 --default tablespace 指定默认用户可以使用的表空间
 ```
@@ -186,5 +186,233 @@ insert into person values(person_id.nextval, 'dw');
 commit;
 ```
 
+#### 6. 查询
 
++ scott用户
 
+    scott用户是oracle内置的一个用户, 里面有几张典型的表, 用于练习查询操作.
+
+    默认scott用户的用于名为scott, 密码为tiger
+
+```sql
+--解锁scott用户
+alter user scott account unlock;
+
+--解锁scott用户密码, 也可用于修改密码
+alter user scott identified by tiger;
+```
+
++ 单行函数
+
+    作用于一行, 返回一个值
+
+```sql
+--常见单行函数
+
+--字符函数
+    select upper('yes') from dual; --转换为全大写
+    select lower('YES') from dual; --转换为全小写
+
+--数值函数
+    select round(56.12) from dual; --结果为56
+    select round(56.16, -1) from dual; --结果为56.2
+    select trunc(56.16, -1) form dual; --结果为56,1
+    select mod(10, 3) from dual; --求余数
+
+--日期函数
+	--sysdate为当前系统时间, 该结果为求所有员工入职几天. e为emp的别名
+	select sysdate-e.date from emp e;
+	--算出明天此时的时间
+    select sysdate+1 from dual;
+    --查询所有员工入职到现在几个月
+    select months_between(sysdate. e.date) from emp e;
+    --查询所有员工入职几年
+    select months_between(sysdate, e.date)/12 from emp e;
+    --查询所有员工入职几周
+    select (sysdate-e.date)/7 from emp e;
+    --日期转字符串
+    --yyyy-mm-dd hh:mi:ss 2019-09-14 1:56:59
+    --fm yyyy-mm-dd hh24:mi:ss 2019-9-14 13:56:59
+    select to_char(sysdate, 'yyyy-mm-dd hh:mi:ss') from dual;
+    --字符串转日期
+    select todate('2019-9-14 13:56:59','fm yyyy-mm-dd hh24:mi:ss')
+
+--通用函数
+	--查询员工一年的工资和奖金总和, 如果奖金为null, 则在相加时自动转换为0
+	select e.sal*12+nvl(e.com, 0) from emp e;
+```
+
++ 多行函数(聚合函数)
+
+```sql
+select count(1) from emp; --查询结果总数 count(1)与count(*)一致
+select sum(sal) from emp; --工资总数
+select max(sal) from emp; --工资最大值
+select min(sal) from emp; --工资最低值
+select avg(sal) from emp; --平均工资
+```
+
++ 条件表达式
+
+```sql
+--通用写法 MySql和Oracle通用
+--查询员工姓名, 将它们的姓名换成英文名
+select e.name,
+	case e.name
+		when 'Smith' then '史密斯'
+		when 'Tom' then '汤姆'
+		else '无名'
+	end
+from emp e;
+
+--查询员工工资水平, 3000以上为高收入, 1500~3000为中等收入, 其他为低等收入
+select e.sal,
+	case
+		when e.sal>3000 then '高等收入'
+		when e.sal>1500 then '中等收入'
+		else '低等收入'
+	end
+from emp e;
+
+--Oracle专用写法
+--别名可以直接写, 也可以用""括起来, 但是不能使用''
+--在Oracle中, 除了起别名, 都用''
+select e.name,
+	decode(e.name, 'Smith', '史密斯', 'Tom', '汤姆', '无名') 别名
+from emp e;
+```
+
++ 分组查询
+
+```sql
+--查询每个部门的平均工资
+select e.deptno, avg(e.sal)
+from emp e
+group by e.deptno;
+
+--查询平均工资高于2000的部门
+--所有条件判断语句都不能使用别名
+select e.deptno, avg(e.sal) avgSal
+from emp e
+group by e.deptno
+having avg(e.sal)>2000;
+
+--计算每个部门工资高于800的员工的平均工资, 并查询平均工资高于2000的部门
+--where是过滤分组前的数据, 写在group之前
+--having是过滤分组后的数据, 写在group之后
+select e.deptno, avg(e.sal)
+from emp e
+where e.sal>800
+group by e.deptno
+having avg(e.sal)>2000;
+```
+
++ 多表查询
+
+```sql
+--笛卡尔积
+select *
+from emp, dept;
+
+--等值连接
+select *
+from emp e, dept d
+where e.deptno=d.deptno;
+
+--内连接(同等值连接)
+select * 
+from emp e inner join dept d
+on e.deptno = d.deptno;
+
+--右外连接
+--查询所有部门信息,以及部门下的员工信息
+select *
+from emp e right join dept d
+on e.deptno = d.deptno;
+
+--左外连接
+--查询所有员工信息, 以及员工的部门信息
+--注意与内连接区别, 当员工部门都有信息时与内连接相同. 当有员工的部门信息没有时, 左外连接的查询结果是员工个数, 而内连接的查询结果没有该员工的信息.
+select * 
+from emp e left join dept d
+on e.deptno = d.deptno;
+
+--Oracle专用外连接写法
+--查询部门信息, 以及部门下的员工信息
+select *
+from emp e, dept d
+where e.deptno(+) = d.deptno
+
+--Oracle专用外连接写法
+--查询员工信息, 以及员工部门信息
+select *
+from emp e, dept d
+where e.deptno = d.deptno(+)
+
+--自连接
+--员工和领导都在一张表, 查询员工及其领导
+select e1.name, e2.name
+from emp e1, emp e2
+where e1.mgr = e2.name;
+
+--查询员工名字和部门, 以及员工领导的名字和部门
+select e1.name, d1.dept.no, e2.name, d2.deptno
+from emp e1, emp e2, dept d1, dept d2
+where e1.mgr = e2.name
+and e1.deptno = d1.deptno
+and e2.deptno = d2.deptno;
+```
+
++ 子查询
+
+```sql
+--查询工资和scott员工一样的员工信息
+--如果name查询结果不唯一, 使用=就会出现错误, 所以建议把=换成in
+select * from emp where sal =
+(select sal from emp where name = 'scott');
+
+--查询工资和10号部门任意一员工工资相同的员工信息
+select * from emp where sal in
+(select sal from emp where deptno = 10);
+
+--查询每个部门最低工资, 和最低工资员工姓名, 和该员工的所在部门名称
+select e.name, t.min(sal), d.deptno
+from (select deptno, min(sal)
+		from emp
+		group by deptno) t, emp e, dept d
+where t.min(sal) = e.sal
+and t.deptno = e.deptno
+and e.deptno = d.deptno;
+
+```
+
++ 分页查询
+
+```sql
+--当我们在做select查询时, 没查询一条数据, 都会加上一个行号
+--这个行号就是rownum, 行号从1开始, 依次递增
+--我们可以使用rownum进行分页
+
+--在使用排序操作后, rownum的顺序会被打乱
+--如下查询结果rownum是乱的, 因为先查询出所有结果, 并依次添加roenum, 然后再进行排序, 所以rownum顺寻是乱的
+select rownum,e.* from emp e order by e.sal desc; 
+
+--如果涉及到排序, 还要使用roenum, 则需要进行嵌套
+--此时rownum就是顺序的
+select rownum, result.*
+from (select * from emp order by sal desc) result;
+
+--分页
+--该情况下, 由于rownum必须从1开始, 而这里rownum>5, 则第一个rownum不能从1开始, 所以会出错, 所以rownum不能添加大于判断条件
+--解决该问题还需要加上一层嵌套
+select rownum, result.*
+from (select * from emp order by sal desc) result
+where rownum < 11 and rownum > 5;
+
+--正确分页
+select *
+from (select rownum rn, result.*
+     from (select * from emp order by sal desc) result
+     where rownum < 11) 
+where rn > 5;
+```
