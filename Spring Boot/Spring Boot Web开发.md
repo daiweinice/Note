@@ -14,7 +14,7 @@
 
 在Spring Boot项目中, 是没有WebApp目录的, 对于静态资源的访问, Spring Boot配置了一套映射规则
 
-这些配置都在 ResourcesProperties.class 中
+这些配置都在 `ResourcesProperties.class` 中
 
 ```java
 @ConfigurationProperties(prefix = "spring.resources", ignoreUnknownFields = false)
