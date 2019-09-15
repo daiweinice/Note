@@ -30,6 +30,8 @@ Oracle数据库是数据的物理存储。这就包括（数据文件ORA或者DB
 
 ![1568426487683](images/Oracle体系结构)
 
+
+
 ## 二、Oracle基础
 
 #### 1. 表空间与用户操作
@@ -235,7 +237,7 @@ alter user scott identified by tiger;
     --fm yyyy-mm-dd hh24:mi:ss 2019-9-14 13:56:59
     select to_char(sysdate, 'yyyy-mm-dd hh:mi:ss') from dual;
     --字符串转日期
-    select todate('2019-9-14 13:56:59','fm yyyy-mm-dd hh24:mi:ss')
+    select to_date('2019-9-14 13:56:59','fm yyyy-mm-dd hh24:mi:ss')
 
 --通用函数
 	--查询员工一年的工资和奖金总和, 如果奖金为null, 则在相加时自动转换为0
@@ -416,3 +418,272 @@ from (select rownum rn, result.*
      where rownum < 11) 
 where rn > 5;
 ```
+
+
+
+## 三、Oracle对象
+
+#### 1. 视图
+
+**视图的概念:** 视图就是提供一个查询的窗口, 所有的数据都来自于原表. 对于视图的操作和对于表的操作是完全相同的, 对视图数据的修改, 也会导致原表对应数据的修改.
+
+**视图的作用:** 
+
+1. 视图可以屏蔽掉一些敏感数据
+2. 视图可以保证总部和分部数据及时统一
+
+```sql
+--跨用户创建表
+create table emp as select * from scott.emp;
+
+--创建视图(需要有DBA权限)
+create view emp_view as select name,job from emp;
+
+--创建只读视图
+create view emp_view as select name,job from emp with read only;
+
+--对视图的增删改查操作与表完全相同
+```
+
+#### 2. 索引
+
+**索引的概念:** 索引就是在表的列上创建一个二叉树, 达到大幅度提高查询效率的目的. 但是索引会影响增删改的效率.
+
++ 单列索引
+
+```sql
+--创建单列索引
+create index index_name on emp(name);
+
+--单列索引触发规则: 条件语句必须是索引列的原始值. 单行函数、模糊查询都会影响索引的触发
+select * from emp where name = 'Tom'; --触发索引
+select * from emp where name like 'T_m'; --不触发索引
+```
+
++ 复合索引
+
+```sql
+--创建复合索引
+create index index_name_job on emp(name, job);
+
+--符合索引的第一列为优先检索列
+--符合索引触发规则: 条件语句必须包含优先检索列的原始值
+select * from emp where name='Tom' and job='software'; --触发
+select * from emp where name='Tom' or job='software';  --不触发
+```
+
+
+
+## 四、Oracle编程
+
+#### 1. PL/SQL编程语言简介
+
+PL/SQL编程语言是对sql语言的扩展, 使得sql语言具有过程化编程的特性.
+
+PL/SQL编程语言比一般过程化编程语言更加灵活高效, 主要用来编写存储过程和存储函数等.
+
+#### 2. 使用PL/SQL编程语言
+
++ 声明方法
+
+```sql
+--基本模板
+declare
+	...声明变量...
+begin
+	...逻辑处理...
+end;
+
+--示例
+declare
+	number number(2) := 10;
+	str varchar2(10) := 'Tom';
+	emp_name emp.name%type; --引用型变量, emp_name变量的类型与emp表中name属性的类型一致
+	emprow emp%rowtype; --记录行变量, 表示一行记录, 相当于一个对象
+begin
+	dbms_output.put_line(number); --控制台输出
+	dbms_output.put_line(str);
+	select name into emp_name from emp where empno=7788; --将查询结果赋值给emp_name变量
+	dbms_output.put_line(emp_name);
+	select * into emprow from emp where empno=7788;
+	dbms_output.put_line(emprow.name || '的工作是:' || emprow.job); --字符串之间用||连接
+end;
+```
+
++ if语句
+
+```sql
+--基本模板
+declare
+
+begin
+	if then
+	elseif then
+	else
+	end if;
+end;
+
+--示例
+declare
+	age number(3) := &age; --&表示输入赋值
+begin
+	if age < 18 then dbms_output.put_line('未成年人');
+	elseif age < 40 then dbms_output.put_line('中年人');
+	else dbms_output.put_line('老年人');
+	end if;
+end;
+```
+
++ 循环
+
+```sql
+--while循环
+delcare
+	i number(2) := 1;
+begin
+	while i<11 loop
+		dbms_output.put_line(i);
+		i := i+1;
+	end loop;
+end;
+
+--exit循环
+delcare
+	i number(2) := 1;
+begin
+	loop 
+		exit when i>10;
+		dbms_output.put_line(i);
+		i := i+1;
+	end loop;
+end;
+
+--for循环
+delcare
+
+begin
+	for i in 1..10 loop
+		dbms_output.put_line(i);
+		i := i+1;
+	end loop;
+end;
+```
+
++ 游标
+
+    游标类似于集合, 可以存放多个数据
+
+```sql
+declare 
+	cursor c is select * from emp;
+	emprow emp%rowtype;
+begin
+	open c;
+		loop
+			fetch c into emprow;
+			exit when c%notfound;
+			dbms_output.put_line(emprow.name);
+		end loop;
+	close c;
+end;
+
+--带参数游标
+celcare
+	cursor c(dno emp.deptno%type) is select empno from emp where deptno = dno;
+	en emp.empno%type;
+begin
+	open c(10);
+		loop
+			fetch c into en;
+			exit when c%notfound;
+			update emp set sal=sal+100 where empno=empno;
+			commit;
+		end loop;
+	close c;
+end;
+```
+
++ 存储过程
+
+    存储过程就是将一段PL/SQL代码编译好, 存放在数据库端, 需要用到时可以直接调用. 存储过程一般用于一些固定步骤的业务操作.
+
+```sql
+--基本格式
+create [or replace] procedure 过程名[(参数名 in/out 数据类型)]
+as/is
+	...定义变量...
+begin
+	...相关逻辑操作...
+end;
+
+--参数类型只是用来声明类型,所以不加具体长度
+--or replace写上后, 当该存储过程名已存在时, 直接替换掉
+--in/out为参数的两种形式, 默认不写为in.
+--as或者is均可
+
+--给指定员工涨工资
+--编写存储过程
+create or replace procedure p(eno emp.empno%type)
+is
+begin
+	update emp set sal=sal+100 where empno=eno;
+	commit;
+end;
+--调用存储过程
+declare
+
+begin
+	p(7788); --给编号为7788的员工涨工资 
+end;
+
+--关于in或out
+--如果参数为in形式, 那么不能进行into、:=等赋值操作, 如果是out形式, 则该参数可以进行赋值操作, 并且可以传递
+create or replace procedure p(eno emp.empno%type, year_sal out number)
+is
+begin
+	select sal*12 into year_sal where empno=eno;
+	year_sal := year_sal+888;
+end;
+
+declare
+	year_sal number(6);
+begin
+	p(7788, year_sal); --调用该存储过程后, 该方法中的变量year_sal的值就是存储过程第二个参数的值.
+	dbms_output.put_line(year_sal);
+end;
+```
+
++ 存储函数
+
+    存储函数与存储过程类似, 不过存储函数可以有返回值, 而存储过程没有返回值.
+
+```sql
+--基本模板
+--注意返回数据类型不用加长度
+create or replace function 函数名(Name in type, Name in type, ...) return 数据类型 
+is
+	...定义变量...
+begin
+	...逻辑操作...
+	return 结果变量;
+end;
+
+--示例
+create or replace function f(eno emp.empno%type) return number
+is
+	s number(10);
+begin
+	select sal*12 into s where empno=eno;
+	return s;
+end;
+
+declare
+	s number(10);
+begin
+	s := f(7788);
+	dbms_output.put_line(s);
+end;
+```
+
+
+
