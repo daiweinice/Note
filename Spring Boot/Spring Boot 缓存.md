@@ -68,7 +68,7 @@ public class UserService{
 /*
 	@Cacheable的属性有:
 	1. cacheNames/value: 指定cache的名字, 数组结构, 可以指定多个
-	2. key: 指定缓存数据的key. 默认为方法参数的值. 支持spel表达式
+	2. key: 指定缓存数据的key. 默认为方法参数的值. 支持spel表达式, 如key="#id"
 	3. keyGenerator: key的生成器, 可以自己指定key的生成器组件
 	4. cacheManager/cacheResolver: 指定cacheManager
 	5. condition: 指定缓存条件. 支持spel表达式 如: condition="#id > 0"
