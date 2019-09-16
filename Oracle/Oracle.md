@@ -656,6 +656,8 @@ end;
 + 存储函数
 
     存储函数与存储过程类似, 不过存储函数可以有返回值, 而存储过程没有返回值.
+    
+    我们可以通过存储函数实现自定义函数.
 
 ```sql
 --基本模板
@@ -683,6 +685,99 @@ begin
 	s := f(7788);
 	dbms_output.put_line(s);
 end;
+```
+
++ 触发器
+
+    触发器就是指定一个规则, 在进行增删改操作时, 如果符合规则, 则自动触发, 无需调用.
+
+    触发器分为两类:
+
+    1. 语句级触发器: 不包含`for each row`的触发器
+    2. 行级触发器: 包含`for each row`的触发器
+
+    加`for each row`的作用是为了使用`:old`和`:new`对象(一条记录)
+
+    | 触发语句 | :old                   | :new                   |
+    | -------- | ---------------------- | ---------------------- |
+    | insert   | 所有字段都为空值(null) | 将要插入的数据         |
+    | update   | 更新以前的记录         | 更新以后的记录         |
+    | delete   | 删除前的记录           | 所有字段都为空值(null) |
+
+    ```sql
+    --语句级触发器
+    	--插入一个员工, 控制台输出新员工入职
+    	--当执行insert操作时, 就是在控制台输出
+    	create or replace trigger t
+    	after
+    	insert
+    	on emp
+    	delcare
+    	
+    	begin
+    		dbms_output.put_line('一个新员工入职');
+    	end;
+    	
+    --行级触发器
+    	--当修改员工工资减薪时, 无法修改并发出错误提示
+    	--当执行update操作时且是减薪操作, 就会发出错误提示
+    	--raise_application_error(-20001~-20099, '错误提示'), 错误代码不能重复
+    	create or replace trigger t
+    	before
+    	update
+    	on emp
+    	for each row
+    	declare
+    	
+    	begin
+    		if :old.sal > :new.sal then 
+    			raise_application_error(-20001, '不能给员工减薪!');
+    		end if;
+    	end;
+    ```
+
++ Java调用存储过程和存储函数
+
+```java
+//调用存储过程
+public void testProcedure01(){
+	String driver="oracle.jdbc.OracleDriver";
+	String url="jdbc:oracle:thin:@192.168.56.10:1521:orcl";
+	String username="scott";
+	String password="tiger";
+	try {
+		Class.forName(driver);
+		Connection con = DriverManager.getConnection(url, username, password);
+		CallableStatement callSt = con.prepareCall("{call proc_countyearsal(?,?)}");
+		callSt.setInt(1, 7839);
+        //第二个参数为out形
+		callSt.registerOutParameter(2, OracleTypes.NUMBER);
+		callSt.execute();
+		System.out.println(callSt.getObject(2));
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
+
+//调用存储函数
+public void testProcedure01(){
+	String driver="oracle.jdbc.OracleDriver";
+	String url="jdbc:oracle:thin:@192.168.56.10:1521:orcl";
+	String username="scott";
+	String password="tiger";
+	try {
+		Class.forName(driver);
+		Connection con = DriverManager.getConnection(url, username, password);
+        //第一个?为返回值
+		CallableStatement callSt = con.prepareCall("{?= call procedure(?)}");
+		callSt.setInt(2, 7788);
+		callSt.execute();
+        //获取返回值并输出
+		System.out.println(callSt.getObject(1));
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}
 ```
 
 
