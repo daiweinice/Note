@@ -97,7 +97,10 @@ grant dba to username;
 ```sql
 create table person(
 	id number(10),
-    name varchar2(10)
+    name varchar2(10) not null,
+    deptno varchar2(10),
+    constraint id_key primary key(id) --主键约束
+    constraint deptno_fk foreign key(deptno) reference dept (deptno) --外键约束
 );
 ```
 
