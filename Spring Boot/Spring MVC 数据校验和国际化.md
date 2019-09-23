@@ -18,11 +18,11 @@
 | @Max(value)                | 注解元素必须为一个整数, 且值最大为指定value  |
 | @DecimalMin(value)         | 注解元素必须为一个小数, 且其最小为指定value  |
 | @DecimalMax(value)         | 注解元素必须为一个小数, 且其最大为指定value  |
-| @Size(max, min)            | 注解元素的大小必须在指定范围                 |
+| @Size(max, min)            | 注解元素的大小(长度)必须在指定范围           |
 | @Digits(integer, fraction) | 注解元素必须是一个数字, 且其值在可接受范围内 |
 | @Past                      | 注解元素必须是一个过去的日期                 |
 | @Futrue                    | 注解元素必须是一个将来的日期                 |
-| @Pattern(value)            | 注解元素必须符合指定正则表达式               |
+| @Pattern(regexp)           | 注解元素必须符合指定正则表达式               |
 
 
 
