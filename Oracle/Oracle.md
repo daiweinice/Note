@@ -592,6 +592,13 @@ begin
 		end loop;
 	close c;
 end;
+--fetch into的作用就是将游标的指针指向下一条记录(第一次fetch后才指向第一条), 当指针指向最后一条记录时, 就不再移动
+--在Oracle中, 布尔类型有三个值, 分别是null、false、true. 
+--对于显式游标而言，第一次fetch之前cursor%notfound的值为null, exit when遇到null值不会停止循环
+--%notfound的值与是否fetch到新的记录有关, 如果fetch到新记录, 则在下一次fetch之前, %notfound的值都为false, 若下一次fetch不到新记录, 则%notfound的值变为true
+--所以当fetch into在exit when后面时, 会出现最后一条记录打印两次的情况
+--注意理解exit方式的循环过程, loop与end loop之间都是循环体, exit when就相当于break语句.
+
 
 --带参数游标
 celcare
