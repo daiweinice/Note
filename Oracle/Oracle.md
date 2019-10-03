@@ -371,6 +371,24 @@ and e1.deptno = d1.deptno
 and e2.deptno = d2.deptno;
 ```
 
++ 递归查询
+
+```sql
+--查询员工jones及其所有下属员工
+SELECT empno, ename,level
+FROM emp
+START WITH ename = 'JONES' --定义开始节点
+CONNECT BY PRIOR empno = mgr; --开始节点往下的连接规则(开始节点的编号为其他节点的领导号)
+
+--查询员工jones及其所有上级领导
+SELECT empno, ename,level
+FROM emp
+START WITH ename = 'JONES' --定义开始节点
+CONNECT BY PRIOR mgr= empno ; ----开始节点往下的连接规则(开始节点的领导编号为其他节点的员工编号)
+
+--递归查询可以查询完所有层级, 如jones的一级下属员工的下属员工也可以被查询到
+```
+
 + 子查询
 
 ```sql
@@ -423,6 +441,30 @@ from (select rownum rn, result.*
      from (select * from emp order by sal desc) result
      where rownum < 11) 
 where rn > 5;
+```
+
+#### 7. 事务
+
+在Oracle中, 执行第一条sql语句时, 事务开启, 随着以下任意一事件发生, 事务结束:
+
+1. commit / rollback
+2. 执行DDL或DCL时自动提交
+3. 用户退出
+4. 系统崩溃
+
+在事务提交之前, 当前用户是可以查询到sql语句执行后的结果的, 其他用户则不行
+
+Tips:
+
++ DDL（Data Definition Languages）语句：数据定义语言，这些语句定义了不同的数据段，数据库，表，列，索引等数据库对象。常用的语句关键字主要包括create,drop,alter等。
++ DML（Data Manipulation Language）语句：数据操纵语句，用于添加，删除，更新和查询数据库记录，并检查数据完整性。常用的语句关键字主要包括insert，delete,update,select等。
++ DCL（Data Control Language）语句：数据控制语句，用于控制不同数据段直接的许可和访问级别的语句。这些语句定义了数据库，表，字段，用户的访问权限和安全级别。主要的语句关键字包括grant,revoke等。
+
+```sql
+UPDATE...
+SAVEPOINT update_done; --设置保存点
+INSERT...
+ROLLBACK TO update_done; --回滚到保存点位置, 保存点之后, 回滚点之前所有操作被还原
 ```
 
 
