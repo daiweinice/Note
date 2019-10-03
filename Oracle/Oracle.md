@@ -246,6 +246,7 @@ alter user scott identified by tiger;
     select to_date('2019-9-14 13:56:59','fm yyyy-mm-dd hh24:mi:ss')
 
 --通用函数
+	--Oracle进行数学运算时, 如果有null值参与. 那么结果为null
 	--查询员工一年的工资和奖金总和, 如果奖金为null, 则在相加时自动转换为0
 	select e.sal*12+nvl(e.com, 0) from emp e;
 ```
@@ -656,6 +657,16 @@ begin
 		end loop;
 	close c;
 end;
+
+--使用for循环遍历游标
+declare
+	cursor c is select * from emp; 
+begin
+	for emp_record in c loop
+		dbms_output.put_line(emp_record.ename || emp_record.sal);
+	end loop;
+end;
+--上述sql还可以不用定义游标, 直接使用for emp_record in (select * from emp)
 ```
 
 + 存储过程
