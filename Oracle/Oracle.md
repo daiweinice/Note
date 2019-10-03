@@ -443,10 +443,10 @@ where rn > 5;
 create table emp as select * from scott.emp;
 
 --创建视图(需要有DBA权限)
-create view emp_view as select name,job from emp;
+create or replace view emp_view as select name,job from emp;
 
 --创建只读视图
-create view emp_view as select name,job from emp with read only;
+create or replace view emp_view as select name,job from emp with read only;
 
 --对视图的增删改查操作与表完全相同
 ```

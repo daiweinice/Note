@@ -181,11 +181,6 @@ public class Test{
 <!--id为方法名称 parameterType为方法需要的参数类型-->
 <!--#{userName}表示User对象的userName属性-->
 <insert id="saveUser" parameterType="com.dw.bean.User">
-    <!--在执行完insert操作后,将id值保存到作为参数传递的user对象的id属性中-->
-    <!--KeyProperty是对象属性, KsyColumn是数据库对应列名, oder表示执行顺序-->
-    <selectKey KeyProperty="id" KeyColumn="id" resultType="int" order="AFTER">
-        select last_insert_id();
-    <selectKey>
     insert into user(userName, sex) values (#{userName},#{sex})
 </insert>
 
@@ -508,8 +503,11 @@ public void addUser(@Param("userId") String uId, @Param("roleId") String rId)
 @Results(id="userMap", value={
     @Result(id=true, column="id", property="userId")
     @Result(column="name", property="userName")
-    @Result(property="accountList", clumn="id", many=@Many(select="com.dw.AccountDao.findAccountsById", fetchType=FetchType.LAZY))
+    @Result(property="user", clumn="uid", one=@One(select="com.dw.UserDao.findById", fetchType=FetchType.LAZY))
 })
+
+fetchType.LAZY: 延迟加载
+fetchType.EAGER: 立即加载
 ```
 
 #### 5. 一对多查询

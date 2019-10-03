@@ -155,7 +155,7 @@ spring:
 		timeout:
 		jedis:
 			pool:
-				max-actrive:
+				max-active:
 				max-wait:
 				max-idle:
 				min-idle:
