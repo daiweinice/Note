@@ -1,14 +1,16 @@
-# Spring
+[TOC]
+
+
 
 ## 一、Spring概述
 
-#### 1. Spring简介
+### 1. Spring简介
 
 > Spring是分层的Java SE/EE应用 full-stack 轻量级开源框架. 以==IOC(Inverse of Control : 控制反转)==和==AOP(Aspect Oriented Programming : 面向切面编程)==为核心. 提供了展示层SpringMVC和持久层Spring JDBC以及业务层事务管理等众多的企业级应用技术, 还能整合开源世界众多著名的第三方框架和类库, 逐渐成为使用最多的Java EE企业应用开源框架.
 
 
 
-#### 2. Spring的优势
+### 2. Spring的优势
 
 1. 方便解耦, 简化开发---IOC
 2. AOP编程的支持
@@ -20,19 +22,21 @@
 
 
 
-#### 3. Spring体系结构
+### 3. Spring体系结构
 
 ![](images/Spring体系结构.png)
 
 ## 二、Spring--IOC
 
-#### 1. 耦合与解耦
+### 1. 耦合与解耦
 
 > 耦合: 程序间的依赖关系. 如类之间的依赖关系、方法之间的依赖关系
 >
 > 解耦: 降低程序之间的依赖关系
 
-##### 1.1 耦合和解耦案例:
+
+
+#### 1.1 耦合和解耦案例:
 
 ```java
 /*
@@ -46,19 +50,19 @@
 DriverManager.registerDriver(new com.mysql.jdbc.Driver());
 
 //第二种
-Class.forName("com.mysql.jdbc.Driver")
+Class.forName("com.mysql.jdbc.Driver");
 ```
 
 
 
-##### 1.2 解耦思路:
+#### 1.2 解耦思路:
 
 1. 通过反射创建对象, 从而避免使用new关键字
 2. 通过读取配置文件获取创建对象的全限定类名
 
 
 
-##### 1.3 工厂模式解耦:
+#### 1.3 工厂模式解耦:
 
 ```java
 /*
@@ -120,13 +124,15 @@ public class Factory{
 
 
 
-#### 2. IOC
+### 2. IOC
 
 > IOC: Inversion of Control, 控制反转. 把创建对象的权力交给框架(工厂), 是框架的重要特征. 它包括DI(Dependency Injection: 依赖注入)和DL(Dependency Lookup: 依赖查找). IOC的作用是减少程序之间的耦合.
 
-##### 2.1 IOC入门案例:
 
-1. 配置文件 bean.xml
+
+#### 2.1 IOC入门案例:
+
+##### (1) 编写配置文件 bean.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -143,7 +149,7 @@ public class Factory{
 </beans>
 ```
 
-2. 使用容器
+##### (2) 使用容器
 
 ```java
 public class Test{
@@ -160,7 +166,7 @@ public class Test{
 
 
 
-##### 2.2 ApplicationContext的三个实现类:
+#### 2.2 ApplicationContext的三个实现类:
 
 1. ClassPathXmlApplicationContext: 可以加载类路径下的配置文件
 2. FileSystemXmlApplicationContext: 可以加载磁盘任意路径的配置文件(有访问权限)
@@ -168,7 +174,7 @@ public class Test{
 
 
 
-##### 2.3 ApplicationContext与BeanFactory:
+#### 2.3 ApplicationContext与BeanFactory:
 
 BeanFactory接口是ApplicationContext的父接口, 也是最顶层接口
 
@@ -186,9 +192,9 @@ IAccountService service = (IAccountService)factory.getBean("accountService");
 
 
 
-##### 2.4 Bean的细节问题
+#### 2.4 Bean的细节问题
 
-+ Bean对象三种创建方式
+##### (1) Bean对象三种创建方式
 
 ```xml
 <!--1. 通过默认构造方法创建, 如果没有默认方法会报错-->
@@ -196,117 +202,117 @@ IAccountService service = (IAccountService)factory.getBean("accountService");
 
 <!--2. 通过工厂的getXXX方法创建一个对象. 比如有一个Factory工厂类, 有一个方法getAccountService(), 它创建一个AccountServiceImpl对象并返回-->
 <bean id="factory" class="com.dw.factory.Factory">
-<bean id="accountService" factory-bean="factory" factory-methdo="getAccountService">
+<bean id="accountService" factory-bean="factory" factory-method="getAccountService">
 
 <!--3. 如果这个getAccountFactory方法是一个静态方法-->
 <bean id="accountService" class="com.dw.factory.Factory" factory-method="getAccountService">
 ```
 
-+ Bean的作用范围
+##### (2) Bean的作用范围
 
-    bean的作用范围通过`<bean>`标签的`scope`属性指定
+bean的作用范围通过`<bean>`标签的`scope`属性指定
 
-    1. singleton(默认): 单例的
-    2. prototype: 多例的
-    3. request: 作用于Web应用的请求范围
-    4. session: 作用于Web应用的会话范围
-    5. global-session: 作用于集群环境的会话范围.  多个服务器共享一个session, 这个session叫全局session
+1. singleton(默认): 单例的
+2. prototype: 多例的
+3. request: 作用于Web应用的请求范围
+4. session: 作用于Web应用的会话范围
+5. global-session: 作用于集群环境的会话范围.  多个服务器共享一个session, 这个session叫全局session
 
-+ Bean的生命周期
+##### (3) Bean的生命周期
 
-    `<bean>`标签有两个属性, `init-method`和`destroy-method`, 用于指定对象创建时执行的方法和对象销毁时执行的方法
+`<bean>`标签有两个属性, `init-method`和`destroy-method`, 用于指定对象创建时执行的方法和对象销毁时执行的方法
 
-    1. 单例对象的生命周期与容器相同
-    2. 多例对象的生命周期:创建: 在需要使用对象时才创建活着: 对象只要在使用过程中就一直活着销毁: 对象长时间不使用, 就会由Java垃圾回收机制销毁
-        注意: 容器有一个close方法用以关闭容器, 但是ApplicationContext接口没有, 所以使用接口声明容器对象, 是无法使用close方法的
+1. 单例对象的生命周期与容器相同
+2. 多例对象的生命周期:创建: 在需要使用对象时才创建活着: 对象只要在使用过程中就一直活着销毁: 对象长时间不使用, 就会由Java垃圾回收机制销毁
+    注意: 容器有一个close方法用以关闭容器, 但是ApplicationContext接口没有, 所以使用接口声明容器对象, 是无法使用close方法的
 
 
 
-##### 2.5 Spring依赖注入
+#### 2.5 Spring依赖注入
 
 > 依赖注入: 创建对象时, 指定成员变量的值
 
-+ 注入数据的三种类型:
+##### (1) 注入数据的三种类型:
 
-    + 基本类型和String类型
-    + 其它bean类
-    + 复杂类型/集合类型
++ 基本类型和String类型
++ 其它bean类
++ 复杂类型/集合类型
 
-+ 注入的三种方式:
+##### (2) 注入的三种方式:
 
-    1. 构造方法注入
+1. 构造方法注入
 
-    ```java
-    /*
-    	<bean>标签内部有一个<constructor-arg>标签, 有以下几个属性:
-        1. type: 用于给指定参数类型的参数赋值, 当多个参数同一类型时无法使用
-        2. index: 用索引的方式指定参数. 索引从0开始
-        3. name: 用构造方法中的参数名称指定参数
-        4. value: 用于指定参数的值, 只适用于基本类型和String. Spring会自动转换类型, 如value="10", 如果参数是int型, 则会转化成int型10
-        5. ref: 如果参数是一个对象, 则使用ref代替value, 引用其<bean>的id
-    */
-    
-    //eg:创建User对象时, 设置其age属性值为20 (前提是有一个构造方法, 参数是一个int age, 方法里赋值this.age=age)
-    <bean id="user" class="com.dw.bean.User">
-        <constructor-arg name="age" value="20"></constructor-arg>
-    </bean>
-    
-    //缺点: 只能使用参数个数和类型与配置相吻合的构造方法, 不能再使用其他构造方法了
-    ```
+```java
+/*
+	<bean>标签内部有一个<constructor-arg>标签, 有以下几个属性:
+    1. type: 用于给指定参数类型的参数赋值, 当多个参数同一类型时无法使用
+    2. index: 用索引的方式指定参数. 索引从0开始
+    3. name: 用构造方法中的参数名称指定参数
+    4. value: 用于指定参数的值, 只适用于基本类型和String. Spring会自动转换类型, 如value="10", 如果参数是int型, 则会转化成int型10
+    5. ref: 如果参数是一个对象, 则使用ref代替value, 引用其<bean>的id
+*/
 
-    2. set方法注入
+//eg:创建User对象时, 设置其age属性值为20 (前提是有一个构造方法, 参数是一个int age, 方法里赋值this.age=age)
+<bean id="user" class="com.dw.bean.User">
+    <constructor-arg name="age" value="20"></constructor-arg>
+</bean>
 
-    ```java
-    /*
-        <bean>标签内部有一个<property>标签, 其有三个属性:
-        1. name: 需要调用哪个setXxx方法, name的值就是Xxx第一个字母小写后的值, 即xxx
-        2. value: 设置的值
-        3. ref: 如果值是一个对象, 则使用ref代替value, 引用<bean>的id
-    */
-    
-    //eg: User对象有一个setUserName方法
-    <bean id="user" class="com.dw.bean.User">
-        <property name="userName" value="David"></property>
-    </bean> 
-    
-    /*
-        集合注入:
-        <property>或<constructor-arg>标签内部有<list>、<array>、<set>、<map>、<props>标签, 分别对应List集合、数组、set集合...
-    */
-    
-    //注意: <list>、<set>、<array>的写法一样, 且相互兼容. 如用<set>一个list集合赋值, 也是可以的
-    <property name="myList">
-        <list>
-            <value>AAA</value>
-            <value>BBB</value>
-        </list>
-    </property>
-    
-    //注意: <map>和<props>也可以相互兼容, 用<psops>给map集合赋值, 也是可以的
-    <property name="myMap">
-        <map>
-            <entry key="1" value="AAA"></entry>
-            <entry key="2"> <value>BBB</value> </entry>
-        <map>
-    </property>
-    <property name="myProp">
-        <props name="myProps">
-            <prop key="1">AAA</prop>
-            <prop key="2">BBB</prop>
-        <props>
-    </property>
-    
-    
-    //优点: 对构造函数无限制, 使用默认构造函数也可以赋值
-    ```
+//缺点: 只能使用参数个数和类型与配置相吻合的构造方法, 不能再使用其他构造方法了
+```
 
-    3. 注解方式注入(见下)
+2. set方法注入
+
+```java
+/*
+    <bean>标签内部有一个<property>标签, 其有三个属性:
+    1. name: 需要调用哪个setXxx方法, name的值就是Xxx第一个字母小写后的值, 即xxx
+    2. value: 设置的值
+    3. ref: 如果值是一个对象, 则使用ref代替value, 引用<bean>的id
+*/
+
+//eg: User对象有一个setUserName方法
+<bean id="user" class="com.dw.bean.User">
+    <property name="userName" value="David"></property>
+</bean> 
+
+/*
+    集合注入:
+    <property>或<constructor-arg>标签内部有<list>、<array>、<set>、<map>、<props>标签, 分别对应List集合、数组、set集合...
+*/
+
+//注意: <list>、<set>、<array>的写法一样, 且相互兼容. 如用<set>一个list集合赋值, 也是可以的
+<property name="myList">
+    <list>
+        <value>AAA</value>
+        <value>BBB</value>
+    </list>
+</property>
+
+//注意: <map>和<props>也可以相互兼容, 用<psops>给map集合赋值, 也是可以的
+<property name="myMap">
+    <map>
+        <entry key="1" value="AAA"></entry>
+        <entry key="2"> <value>BBB</value> </entry>
+    <map>
+</property>
+<property name="myProp">
+    <props name="myProps">
+        <prop key="1">AAA</prop>
+        <prop key="2">BBB</prop>
+    <props>
+</property>
 
 
+//优点: 对构造函数无限制, 使用默认构造函数也可以赋值
+```
 
-##### 2.6 注解开发
+3. 注解方式注入(见下)
 
-1. 创建对象
+
+
+#### 2.6 注解开发
+
+##### (1) 创建对象
 
 ```java
 /*
@@ -334,12 +340,12 @@ IAccountService service = (IAccountService)factory.getBean("accountService");
         https://www.springframework.org/schema/context/spring-context.xsd">
 
     <!--告诉Spring创建容器时, 需要扫描的包-->
-    <context:component-scan base-package="com.dw"></context:annotation-config>
+    <context:component-scan base-package="com.dw">
 
 </beans>
 ```
 
-2. 依赖注入
+##### (2) 依赖注入
 
 ```java
 /*
@@ -361,8 +367,8 @@ IAccountService service = (IAccountService)factory.getBean("accountService");
 */
 @Resource(name="accountService")
 
-以上三种注入方法, 只能注入存在于容器中的对象类型, 基本类型和String类型无法注入
-集合类型的注入只能通过xml方式配置
+//以上三种注入方法, 只能注入存在于容器中的对象类型, 基本类型和String类型无法注入
+//集合类型的注入只能通过xml方式配置
 
 /*
     实现基本类型和String类型的注入
@@ -376,13 +382,14 @@ IAccountService service = (IAccountService)factory.getBean("accountService");
     读取了配置文件, 就可以使用EL表达式注入数据. 如下面代表注入数值为配置文件中key为name的值
 */
 @PropertySource("classpath:config.properties")
-public class SpringConfig{...}
-
-@Value("${name}")
-public String name;
+public class SpringConfig{
+    
+    @Value("${name}")
+	public String name;
+}
 ```
 
-3. 作用范围
+##### (3) 作用范围
 
 ```java
 /*
@@ -391,7 +398,7 @@ public String name;
 @Scope(value="singleton")
 ```
 
-4. 生命周期
+##### (4) 生命周期
 
 ```java
 /*
@@ -407,7 +414,7 @@ public String name;
 @PostConstruct
 ```
 
-5. 配置类来代替xml配置文件
+##### (5) 配置类来代替xml配置文件
 
 ```java
 /*
@@ -432,7 +439,7 @@ public class SpringConfig{
 
 }
 
-此时获取容器对象的方法也发生了改变:
+//此时获取容器对象的方法也发生了改变:
 //该构造方法的参数是可变参数, 可以传入多个配置类的class对象
 ApplicaionContext ac = AnnotationConfigApplicationContext(SpringConfig.class)
 ```
@@ -441,11 +448,13 @@ ApplicaionContext ac = AnnotationConfigApplicationContext(SpringConfig.class)
 
 
 
-##### 2.6 Spring与Junit整合
+#### 2.6 Spring与Junit整合
 
-问题分析: 
+##### (1) 问题分析: 
 
 由于开发人员和测试人员是两种不同的角色, 测试人员不一定会Spring, 所以在测试类的测试方法里最好不要出现Spring的代码(如获取ApplicationContext等). 此时将AccountService对象都作为成员变量, 通过依赖注入赋值, 这样测试人员就只用关心功能的问题了. 但是此时在测试类中使用@AutoWired等注解注入依赖是无效的, 因为缺失了加载配置文件的步骤(即创建ApplicationContext对象的步骤). Junit之所以不需要在main方法进行测试, 是因为其集成了一个main方法, 但是该main方法根本不知道我们是否会使用Spring, 因而无法为我们加载Spring的配置文件, 所以需要将Spring和Junit整合在一起, 使用Spring提供的main方法, 这样就可以成功加载配置文件了.
+
+##### (2) 解决方法:
 
 ```java
 //1. 导入Spring整合Junit的jar包 spring-test.jar
@@ -457,4 +466,3 @@ ApplicaionContext ac = AnnotationConfigApplicationContext(SpringConfig.class)
 或
 @ContextConfiguration(locations={"classpath:bean.xml"})
 ```
-
