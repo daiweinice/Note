@@ -1,7 +1,3 @@
-[TOC]
-
-
-
 ## 一、Spring概述
 
 ### 1. Spring简介
@@ -103,7 +99,7 @@ public class Factory{
 
     static{
         pro = new Properties();
-        InputStream in = Factory.class.getClassLoader().getResourceAsStream();
+        InputStream in = Factory.class.getClassLoader().getResourceAsStream(xxx.properties);
         pro.load(in);
         
         container = new Map<String, Object>;
@@ -466,3 +462,583 @@ ApplicaionContext ac = AnnotationConfigApplicationContext(SpringConfig.class)
 或
 @ContextConfiguration(locations={"classpath:bean.xml"})
 ```
+
+
+
+## 三、Spring--AOP
+
+### 1. 设计模式--代理模式
+
+> 代理模式的结构类似于消费者-代理商-生产厂家的三级结构
+
+#### 1.1 概述
+
+##### (1) 动态代理的特点: 
+
+字节码随用随创建, 随用随加载
+
+##### (2) 动态代理的作用
+
+不修改源码的情况下对方法进行增强
+
+##### (3) 使用场景
+
+1. 连接池close方法增强, 使得close方法不再是关闭连接, 而是把连接归还到连接池
+2. 通过代理对象实现数据库事务管理代码简化, 将事务管理作为增强部分, 创建DB对象的代理对象, 这样每一个方法都会有事务管理且不需要在每个方法中都写一遍事务管理的代码.
+
+
+
+#### 1.2 基于接口的动态代理: 被代理对象必须实现接口
+
+```java
+/*
+    生产厂家的接口IProducer
+*/
+
+public interface IProducer{
+    //销售
+    public void sell(float money);
+
+    //售后
+    public void afterService(float money);
+}
+```
+
+```java
+/*
+    生产者, 接口实现类
+*/
+
+public class Producer implements IProducer{
+    public void sell(float money){
+        System.out.println("售出电脑, 获得"+money+"元");
+    }
+
+    public void afterService(float money){
+        System.out.println("售后服务. 获得"+money+"元");
+    }
+}
+```
+
+```java
+/*
+    消费者, 使用动态代理
+*/
+
+public class Consumer{
+    public static void main(String[] args){
+        //创建一个需要被代理的对象
+        //因为后面匿名内部类要使用该对象, 所以必须用final修饰. 原理-->Java/Java SE/Java 内部类
+        final Producer producer = new Producer();
+
+
+         /*
+           获取一个动态代理对象
+           Proxy是由JDK官方提供的创建动态代理的类
+           第一个参数: 被代理对象的类加载器
+           第二个参数: 被代理对象的接口
+           第三个参数: 增强方法, 匿名内部类InvocationHandler, 重写里面的invoke方法
+        */ 
+        IProducer proxyProducer = (IProducer)Proxy.newProxyInstance(producer.getClass().getClassLoader(), producer.getClass().getInterfaces(),
+                new InvocationHandler(){
+                    /*
+                        执行被代理的对象的任何方法都会经过该方法
+                        第一个参数: 被代理对象的含义
+                        第二个参数: 当前执行的方法
+                        第三个参数: 执行方法的参数
+                        返回值与执行方法的返回值类型相同
+                    */
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable{
+                        //提供增强的代码, 如这里是修改sell价格
+                        if(method.getName().equals("sell")){
+                            float money = (float)args[0];
+                            method.invoke(producer, money*2);
+                        }
+                        //因为原sell方法无返回值, 所以返回null
+                        return null;
+                    }
+         });
+
+        proxyProducer.sell(10000);
+        //因为在InvationHandler中没有invoke afterService方法, 所以这个方法就不会执行了
+        proxyProducer.afterService(1000);
+    }
+}
+
+运行结果:
+售出电脑, 获得20000元
+```
+
+#### 1.3 基于子类的动态代理: 代理对象的类不能是最终类(即不能用final修饰)
+
+```java
+/*
+    生产者类
+*/
+
+public class Producer{
+    public void sell(float money){
+        System.out.println("售出电脑, 获得"+money+"元");
+    }
+
+    public void afterService(float money){
+        System.out.println("售后服务. 获得"+money+"元");
+    }
+}
+```
+
+```java
+/*
+    消费者类
+*/
+
+public class Consumer{
+    public static void main(String[] args){
+        //创建被代理对象        
+        final Producer producer = new Producer();
+
+        /*
+            创建代理对象
+            需要导入Jar包 cglib.jar
+            使用Enhancer类的create方法创建代理对象
+            第一个参数: 被代理对象的类加载器
+            第二个参数: 增强方法 一般使用callback接口的子实现类MrthodInterCeptor
+        */
+        Prducer proxyProducer = (Producer)Enhancer.create(producer.getClass().getClassLoader(), new MethodInterCeptor(){
+            public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throw Throwable{
+                //提供增强的代码, 如这里是修改sell价格
+                if(method.getName().equals("sell")){
+                    float money = (float)args[0];
+                    method.invoke(producer, money*2);
+                }
+                //因为原sell方法无返回值, 所以返回null
+                return null;
+            }
+        });
+
+        proxyProducer.sell(10000);
+    ]
+}
+
+运行结果:
+售出电脑, 获得20000元
+```
+
+### 2. AOP
+
+#### 2.1 AOP概述
+
+> AOP(Aspect Oriented Programming), 面向切面编程.  在单体架构下的软件开发中，一个大型项目通常是依照功能拆分成各个模块。但是如日志、安全和事务管理此类重要且繁琐的开发却没有必要参与到各个模块中，将这些功能与业务逻辑相关的模块分离就是面向切面编程所要解决的问题.  AOP采取的是横向抽取机制，取代了传统纵向继承体系重复性代码。
+
+##### (1) 横向与纵向
+
+从纵向结构来看就是我们软件的各个模块，它所负责的是软件的核心业务（如购商品购买、添加购物车等）；从横向来看的话，软件的各个模块之间又有所关联，其中会包含一些公共模块（例如日志、权限等）；这些公共模块可以存在于各个核心业务中，而AOP的处理将两者分离，使开发人员可以专注于核心业务的开发，提高了开发效率。
+
+##### (2) AOP的作用
+
+在不修改源码的情况下对已有方法进行增强. (AOP的本质就是通过Spring的方式实现动态代理)
+
+##### (3) AOP的优势
+
+减少重复代码、提高开发效率、方便维护
+
+##### (4) AOP术语
+
++ Joinpoint(连接点): 被代理对象的所有方法都是连接点
++ Pointcut(切入点): 对哪些Joinpoint进行拦截的定义, 即需要被增强的方法是切入点
++ Advice(通知): 拦截到Joinpoint后要做的事情, 即增强方法
+    + 前置通知: invoke原方法之前的部分
+    + 后置通知: invoke原方法之后的部分
+    + 异常通知: catch块里的部分
+    + 最终通知: finally块里的部分
+    + 环绕通知: 整个invoke方法. 环绕通知中有明确的切入点调用
++ Target: 被代理对象
++ Weaving: 加入增强方法的过程
++ Proxy(代理): 方法增强后产生的代理类
++ Aspect(切面): 切入点和通知的结合. 即通知与切入点的执行先后关系
+
+##### (5) AOP开发步骤
+
+1. 编写核心代码
+2. 将公用代码抽取出来, 制作成通知(一个一个的方法)
+3. 在配置文件中声明切入点和通知的关系, 即切面此时, 当切入点方法被执行, Spring就会根据配置创建代理对象,执行增强后的方法.
+
+#### 2.2 AOP实例
+
+##### (1) 配置文件方式
+
+```java
+/*
+    模拟账户接口, 业务层接口
+*/
+public interface IAccountService{
+    void saveAccount();
+    
+    void updateAccount(float addMoney);
+
+    int deleteAccount();
+    
+}
+```
+
+```java
+/*
+    业务层实现类
+*/
+public class AccountServiceImpl implements IAccountService{
+    void saveAccount(){
+        System.out.println("执行了保存操作...");
+    }
+
+    void updateAccount(float addMoney){
+        System.out.println("执行了更新操作...");
+    }
+
+    int deleteAccount(){
+        System.out.println("执行了删除操作...");
+    }
+}
+```
+
+```java
+/*
+    日志记录, 将作为业务层的增强方法
+*/
+public class Log{
+    public void printLog(){
+        System.out.println("记录日志...")
+    }
+}
+```
+
+```xml
+<!--需要在配置文件中加入aop相关的配置约束文件-->
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="accountService" class="com.dw.service.AccountServiceImpl"></bean>
+    <bean id="log" class="com.dw.utils.Log"></bean>
+
+    <!--配置AOP-->
+    <aop:config>
+        <aop:aspect id="logAdvice" ref="log">
+            <aop:before method="printLog" pointcut="execution(public void com.dw.service.AccountServiceImpl.saveAccount())"></aop:before>
+        </aop:aspect>
+    <aop:config>
+    
+</beans>
+
+解释:
+1. <aop:aspect>用于配置一个切面 id是唯一标识, ref指向通知的类的bean id
+2. <aop:XXX> 配置通知和作用的切入点
+   <aop:before>: 前置通知
+   <aop:after-returning>: 后置通知
+   <aop:after-throwing>: 异常通知
+   <aop:after>: 最终通知
+   <aop:around>: 环绕通知
+3. method属性表示通知类中对应的方法名, pointcut属性指定切入点, 用切入点表达式表示
+4. 切入点表达式格式: execution(表达式)
+5. 表达式格式: 修饰符 返回值 全类名.方法名(参数列表)
+6. 表达式简略写法(使用通配符*)(需要导入aspectjweaver.jar)
+   --修饰符可以直接省略
+   --返回值用* 表示任意类型返回值
+   --包名可使用*表示任意包, 但是有几级包就需要写几个* 如*.*.*, *..表示当前包及其自包
+   --类名和方法名也都可以用*通配
+   --参数列表
+     1)基本类型直接写名称 如:int
+     2)引用类型写包名+类名 如java.lang.String
+     3)*表参数可以是任何类型
+     4)..表示有无参数均可, 有参数可是任意类型
+   --全通配写法: * *..*.*(..)
+   --实际开发常用: * com.dw.service.*.*(..)
+7. <aop:pointcut id="" expression=""></aop:point>
+   用于定义一个切面表达式, id为唯一标识, expression为切面表达式
+   在<aop:xxx>中通过pointcut-ref属性按照id引入即可
+   如果把<aop:pointcut>放在<aop:aspect>外部, 则所有切面配置都可以引用, 但是<aop:pointcut>必须放在<aop:aspect>之前(约束规定)
+8. 在配置了环绕通知后, 切入点方法并没有执行, 而通知方法执行了.这是因为在手动实现动态代理代码中的环绕通知有一个明确的切入点方法执行, 而我们配置的环绕通知并没有.
+   解决: Spring为我们提供了一个接口ProceedingJoinPoint. 它有一个方法, proceed(), 此方法就相当于明确调用切入点方法.
+   该接口可以作为环绕通知的方法的参数,在程序执行时, Spring会为我们提供其实现类.
+   <aop:around method="aroundPrintLog" pointcut="void com.dw.service.AccountServiceImpl.saveAccount()"></aop:around>
+
+    public Object aroundPrintLog(ProceedingJoinPoint pjp){
+        Object returnValue = null;
+        try{
+            Object[] args=pjp.getArgs();
+            
+            前置增强的代码...
+
+            returnValue=pjp.proceed(args);
+
+            后置增强的代码...
+        }catch(Throwable t){
+            异常增强的代码...
+        }finally{
+            最终增强的代码...
+        }
+    }
+   
+   所以Spring的环绕通知给我们提供了一种可以手动控制增强方法何时执行的方式
+```
+
+##### (2) 注解方式
+
+```java
+@Service("accountService")
+public class AccountServiceImpl implements IAccountService{
+    void saveAccount(){
+        System.out.println("执行了保存操作...");
+    }
+
+
+    void updateAccount(float addMoney){
+        System.out.println("执行了更新操作...");
+    }
+
+
+    int deleteAccount(){
+        System.out.println("执行了删除操作...");
+    }
+}
+```
+
+```java
+@Component("log")
+@Aspect  //说明该类是一个通知类
+public class Log{
+    
+    @Pointcut("execution(* com.dw.service.*.*(..))")
+    private void pointcutConfig(){}
+
+    @Before("pointcutConfig()")
+    //或者直接配置切入点 @Before("execution(* com.dw.service.*.*(..))")
+    public void printLog(){
+        System.out.println("记录日志...")
+    }
+
+    @Around("pointcutConfig()")
+    public Object aroundPrintLog(ProceedingJoinPoint pjp){
+        Object returnValue = null;
+        try{
+            Object[] args=pjp.getArgs();
+            
+            前置增强的代码...
+
+
+            returnValue=pjp.proceed(args);
+
+
+            后置增强的代码...
+        }catch(Throwable t){
+            异常增强的代码...
+        }finally{
+            最终增强的代码...
+        }
+    }
+}
+```
+
+```xml
+<!--需要在配置文件中加入aop相关的配置约束文件-->
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd"
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+    
+    <context:component-scan base-package="com.dw"></context:annotation-config>
+
+    <!--开启注解aop支持-->
+    <aop:aspectj-autoproxy></aop:aspect-autoproxy>
+
+</beans>
+
+或者通过配置类:
+@EnableAspectJAutoProxy
+public class SpringConfig{
+
+}
+```
+
+##### (3) JoinPoint对象
+
+JoinPoint对象封装了切入点方法的信息, 可以==将该对象作为通知方法的参数==, 然后调用相关方法获取对应切入点方法信息
+
+| 方法                     | 说明                                                         |
+| :----------------------- | :----------------------------------------------------------- |
+| Signature getSignature() | 通过该对象的getName()方法, 获取方法名                        |
+| Object[] getArgs()       | 获取方法的所有参数, 这些方法的基本类型参数都应该修改类型声明 如int->Integer, 否则方法会报错 |
+| Object getTarget()       | 获取该方法所属的对象(即被代理对象)                           |
+| Object getThis()         | 获取代理对象                                                 |
+
+## 四、Spring--JdbcTemplate
+
+### 1. 概述
+
+##### (1) 简介
+
+> Spring为开发者提供了许多模板, 它们都是对原始Jdbc API的简单封装. 这些模板有JdbcTemplate、HibernateTemplate、RedisTemplate等.
+
+##### (2) 依赖jar包
+
+spring-jdbc、spring-tx(事务相关)
+
+### 2. 入门案例
+
+```java
+public class Test{
+    public static void main(String[] args){
+        //1. 配置数据源(这里使用Spring内置数据源)
+        DriverManagerDataSource ds = new DriverManagerDateSource();
+        ds.setDriverClassName("com.mysql.jdbc.Driver");
+        ds.setUrl("jdbc:mysql://localhost:3306/dw");
+        ds.setUserName("root");
+        ds.setPassword("123456");
+        
+        //2. 创建Template模板
+        JdbcTemplate template = new JdbcTemplate();
+        template.setDatasource(ds);
+        
+        //3. 使用模板
+        template.execute("insert into user(name,age)values("dw",20)");
+    }
+}
+
+1. 由上面的代码可以看出, 使用IOC配置可以简化上面的代码操作
+```
+
+### 3. CRUD操作
+
+```java
+/*
+    保存、更新、删除操作
+*/
+void update(String sql, args...arg)
+
+/*
+    查询操作
+*/
+List<T> query(String sql, RowMap<T> map, args...arg)
+
+eg: 
+List<User> list = template.query("select * form user where id=?", new BeanPropertyRowMapper<User>(User.class), 1001);
+Systemout.out.println(list.isEmpty()?"空集合":list.get(0))
+
+/*
+    聚合函数, 查询单行单列
+*/
+<T> T queryForObject(String sql, Class class, args...arg)
+
+eg
+Long count = template.queryForObject("select count(*) from user where age>?", Integer.class, 20); 
+```
+
+### 4. JdbcDaoSupport类
+
+在项目开发中, 有很多的Dao接口, 每个Dao接口的实现类都需要定义一个JdbcTemplate成员变量, 这些代码都是重复的, 我们可以让这个实现类都Extends JdbcDaoSupport类, 该类有一个JdbcTemplate成员变量, 我们的实现类就不需要在自己定义JdbcTemplate了, 直接调用getJdbcTemplate()方法, 共同使用父类的JdbcTemplate.
+
+
+
+## 五、Spring--事务控制
+
+### 1. 概述
+
+##### (1) 介绍
+
++ Spring内置了一套事务控制的API和配置方法.
++ 使用Spring的事务控制需要导入jar包spring-tx.
++ Spring的事务控制是基于AOP的, 它既可以使用编程的方式实现, 也可以使用配置的方式实现.
++ 在JavaEE中, 事务控制位于业务层(Service), 而不是持久层(Dao)
+
+##### (2) 相关API
+
++ PlatformTransactionManager接口 事务管理器
+    + DataSourceTransactionManager实现类(使用Jdbc或MyBatis时使用)
+    + HibernateTransactionManager实现类(使用Hibernate时使用)
++ TransactionDefinition 事务定义信息对象
++ TransactionStatus接口 事务运行状态
+
+### 2. 配置文件方式
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:aop="http://www.springframework.org/schema/aop"
+         xmlns:tx="http://www.springframework.org/schema/tx"
+         xsi:schemaLocation="
+          http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/tx
+          http://www.springframework.org/schema/tx/spring-tx.xsd
+          http://www.springframework.org/schema/aop
+          http://www.springframework.org/schema/aop/spring-aop.xsd">
+  
+      <bean id="accountService" class="com.itheima.service.AccountServiceImpl">
+          <property name="accountDao" ref="accountDao"></property>
+      </bean>
+
+      <bean id="accountDao" class="com.itheima.dao.impl.AccountDaoImpl">
+          <property name="dataSource" ref="dataSource"></property>
+      </bean>
+  
+      <!-- 配置数据源-->
+      <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+          <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+          <property name="url" value="jdbc:mysql://localhost:3306/eesy"></property>
+          <property name="username" value="root"></property>
+          <property name="password" value="HotteMYSQL"></property>
+      </bean>
+  
+      
+      <!--配置事务管理器-->
+      <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+          <property name="dataSource" ref="dataSource"></property>
+      </bean>
+  
+      <!--配置事务通知-->
+      <tx:advice id="txAdvice" transaction-manager="transactionManager">
+          <!--配置事务属性-->
+          <tx:attributes>
+              <!--name表示方法名可以使用通配符* 如find*表示所有的find开头的方法-->
+              <tx:method name="transfer" propagation="REQUIRED" read-only="false"/>
+              <tx:method name="find*" propagation="SUPPORTS" read-only="true"></tx:method>
+          </tx:attributes>
+      </tx:advice>
+  
+      <!--配置切面-->
+      <aop:config>
+          <aop:pointcut id="pt1" expression="execution(* com.itheima.service.*.*(..))"></aop:pointcut>
+          <aop:advisor advice-ref="txAdvice" pointcut-ref="pt1"></aop:advisor>
+      </aop:config>
+</beans>
+
+事务属性:
+* isolation：用于指定书屋的隔离级别，默认值为 DEFAULT，表示数据库的默认隔离级别
+* propagation：用于指定事务的传播行为。默认值是REQUIRED，表示一定会有事务，增删改的选择。查询方法可以选择SUPPORTS。
+* read-only：用于指定事务是否只读。只有查询方法才能设置为true。默认值是false，表示读写。
+* timeout：用于指定事务的超时时间，默认值是-1，表示永不超时。如果指定了数值，以秒为单位。
+* rollback-for：用于指定一个异常，当产生该异常时，事务回滚，产生其他异常时，事务不回滚。没有默认值。表示任何异常都回滚。
+* no-rollback-for：用于指定一个异常，当产生该异常时，事务不回滚，产生其他异常时事务回滚。没有默认值。表示任何异常都回滚。
+```
+
+### 3. 注解方式
+
+```xml
+1. 配置事务管理器DatasourceTransactionManager的<bean>
+2. 开启注解事务支持 
+   <tx:annotation-driven teansaction-manager="transactionManager"></tx:annotation-driven>
+3. 在需要使用事务控制的方法上(应该是Service的方法而不是Dao的方法, 因为事务控制是位于业务层的)加上注解@Transactional(), 注解里可以配置相关属性. 该注解可以作用在方法上也可以作用在类上, 注解在类上, 表示对所有方法进行事务控制
+```
+
