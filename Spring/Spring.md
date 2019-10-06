@@ -653,7 +653,7 @@ public class Consumer{
     + 最终通知: finally块里的部分
     + 环绕通知: 整个invoke方法. 环绕通知中有明确的切入点调用
 + Target: 被代理对象
-+ Weaving: 加入增强方法的过程
++ Weaving: 织入, 加入增强方法的过程
 + Proxy(代理): 方法增强后产生的代理类
 + Aspect(切面): 切入点和通知的结合. 即通知与切入点的执行先后关系
 
@@ -1036,7 +1036,7 @@ Long count = template.queryForObject("select count(*) from user where age>?", In
 ### 3. 注解方式
 
 ```xml
-1. 配置事务管理器DatasourceTransactionManager的<bean>
+1. 配置事务管理器Datasource和TransactionManager的<bean>
 2. 开启注解事务支持 
    <tx:annotation-driven teansaction-manager="transactionManager"></tx:annotation-driven>
 3. 在需要使用事务控制的方法上(应该是Service的方法而不是Dao的方法, 因为事务控制是位于业务层的)加上注解@Transactional(), 注解里可以配置相关属性. 该注解可以作用在方法上也可以作用在类上, 注解在类上, 表示对所有方法进行事务控制
