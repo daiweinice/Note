@@ -72,7 +72,7 @@
 </bean>
 
 <!--配置映射, 将所有Dao接口的代理对象加入到容器中-->
-<bean id="mapperScan" class="org.mybatis.spring.mapper.MapperscannerConfigurer">
+<bean id="mapperScan" class="org.mybatis.spring.mapper.MapperscannerConfigure">
     <property name="basePackage" value="com.dw" />
 </bean>
 
@@ -104,3 +104,4 @@
 -->
 ```
 
+  
