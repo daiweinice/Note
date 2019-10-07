@@ -57,7 +57,7 @@
 
 <servlet-mapping>
     <servlet-name>dispatcherServlet</servlet-name>
-    <url-pattern>/</url-pattern>
+    <url-pattern>/*</url-pattern>
 </servlet-mapping>
 ```
 
@@ -138,7 +138,7 @@ index.jsp
 
 ## 二、Spring MVC组件介绍
 
-![](images/Spring MVC组件.bmp)
+<img src="images/Spring MVC组件.bmp"  />
 
 + 前端控制器: 用户请求到达前端控制器，它就相当于mvc模式中的c. DispatcherServlet是整个流程控制的中心，由它调用其它组件处理用户的请求，DispatcherServlet的存在降低了组件之间的耦合性。
 + 处理器映射器: HandlerMapping负责根据用户请求找到Handler(处理器, 也就是处理请求的方法)，SpringMVC提供了不同的映射器实现不同的映射方式，例如：配置文件方式，实现接口方式，注解方式等。
@@ -295,7 +295,7 @@ post请求传递参数会出现中文乱码的问题, 这时候需要通过Filte
 #### 4. @RequestBody
 
 + 作用：用于获取请求体的内容(只有post方法才有请求体)
-+ 用法: ...(@RequestBody String body)  将请求体信息传给body参数**@CookieValue**
++ 用法: ...(@RequestBody String body)  将请求体信息传给body参数
 
 #### 5. @CookieValue
 
@@ -425,5 +425,204 @@ public @ResponseBody User find(@RequestBody User user){
 
 //将一个User对象以json的形式返回给客户端
 //注意: 需要导入jackson的jar包
+```
+
+
+
+## 六、文件上传
+
+#### 1. 文件上传的前提
+
+1. form表单的enctype属性取值必须是: multipart/form-data(默认是application/x-www-form-urlencoded)
+2. method方法必须是post, (因为get方法对传送的数据有大小限制)
+3. 提供文件域`<input type="file" />`
+
+#### 2. 文件上传原理分析:
+
+当form表单的enctype属性不是默认取值后, request的getParameter方法就会失效. 请求的正文内容每一部分都是MIME类型描述的正文, 需要解析. 一般使用第三方工具进行解析. Commons-fileupload.jar、commons-io.jar
+
+#### 3. 传统实现方式
+
+```java
+@RequestMapping("/uploadFile")
+public String uploadFile(HttpservletRequest request){
+    //1. 指定文件上传位置
+    String path = request.getSession().getServletContext.getRealPath("/uploads/");
+    //2. 判断文件是否存在, 如果不存在则创建该文件夹
+    File file = new File(path);
+    if(!file.exists()){
+        file.mkdirs();
+    }
+
+    //3. 解析request对象, 获取上传文件项
+    DiskFileItemFactory factory = new DiskFileItemFactory();
+    ServletFileUpload upload = new ServletFileUpload(factory);
+    List<FileItem> list = upload.parseRequest(request);
+
+    //4. 遍历文件项
+    for(FileItem item : list){
+        //判断是文件项还是表单项
+        if(item.isFormFiled()){
+            //是表单项
+        }else{
+            //是文件项
+            String fileName = item.getName();
+            item.write(new File(path, fileName));
+            //删除临时文件
+            item.delete();
+        }
+    }
+}
+```
+
+#### 4.  MVC实现方式
+
+实现原理: SpringMVC的前端控制器在创建时会去读取配置文件, 我们可以在配置文件中配置好文件解析器, 当文件上传的request请求发送过来时, 前端控制器会将请求解析成一个对象MultipartFile, 这个对象可以通过处理器参数得到.
+
+```java
+1. 配置文件解析器
+<!-- id的值是固定的-->
+<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <!-- 设置上传文件的最大尺寸为5MB -->
+    <property name="maxUploadSize" value="5242880"></property>
+</bean>
+
+2.
+@RequestMapping("/uploadFile")
+//注意这里的参数名必须与<input type="file" name="upload">的name属性值一致
+public String uploadFile(MultipartFile upload){
+    String fileName = upload.getOriginalFilename();
+    upload.transferTo(new File(path, fileName));
+}
+```
+
+#### 5. 跨服务器上传
+
+需要jar包: jersey-client.jar, jersey-core.jar
+
+```java
+@RequestMapping("uploadFile")
+//注意这里的参数名必须与<input type="file" name="upload">的name属性值一致
+public String uploadFile(MultipartFile upload){
+    String fileName = upload.getOriginalFilename();
+
+    //1. 获取客户端对象, 注意这个Client对象是jersey包里的
+    Client client = new Client();
+    //2. 和图片服务器进行连接
+    WebResouce wr = client.resource("http://localhost:9090/images/"+fileName)
+    //3. 上传文件到另外一个服务器的项目目录下的images文件夹中, 名字就是fileName变量的值
+    wr.put(upload.getBytes());
+}
+```
+
+
+
+## 七、异常处理
+
+> Spring提供了一个异常处理器组件, 当我们的程序出现了异常时, 可以通过异常处理器将页面跳转到一个更加友好的错误页面.
+
+#### 1. 编写异常类
+
+```java
+public class MyException extends Exception{
+    String message;
+
+    public MyException(String message){
+        this.massage = message;
+    }
+}
+
+异常部分代码
+try{
+    int num = 1 / 0;
+}catch(Exception e){
+    e.printStackTrace();
+    throw new MyException("出现了异常...");
+}
+```
+
+#### 2. 编写异常处理器
+
+```java
+public class MyExceptionResolver implements HandlerExceptionResolver{
+    public ModelAndView resolveException(HttpServletRequest request,
+            HttpServletResponse response, Object handler, Exception ex){
+        
+        MyException exception = null;
+        if(ex instanceof MyException){
+            exception = (MyExceprion)ex;
+        }else{
+            exception = new MyException("系统正在维护!!")
+        }
+
+        ModelAndView mv = new ModeAndView();
+        mv.addObject("errorMessage", exception.getMessage());
+        mv.setViewName("error");
+
+        return mv;
+    }
+}
+```
+
+#### 3. 配置异常处理器
+
+```xml
+<!--按照普通Bean对象配置即可-->
+<bean id="MyExceptionResolver" class="com.dw.exceptionResolver.MyExceptionResolver"></bean>
+```
+
+
+
+## 八、拦截器
+
+> SpringMVC拦截器类似于原生Servlet的过滤器, 但是与原生过滤器相比, 拦截器只会拦截处理器方法, 不会拦截静态资源.
+
+#### 1. 编写拦截器
+
+```java
+public class MyInterceptor implements HandlerInterceptor{
+    //在JDK1.8中可以直接在接口中实现方法, 它的实现类就可以不用实现方法. HandlerIterceptor就是这样的接口
+    
+    //预处理方法, 在处理器方法执行前执行, 如果return true则表示放行    
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println("preHandle拦截器拦截了");
+        return true;
+    }
+
+    //后处理方法, 指处理器方法执行后, 响应内容经过拦截器时执行的方法
+    //该方法返回值是void, 如果处理器方法中return "success", 但在这个方法中直接跳转到其他页面, 最终结果是跳转到了其他页面, 但是还是会执行success.jsp的java代码
+    public void postHandler(...){}
+
+    //跳转到success.jsp后执行的方法
+    //该方法里面跳转其他页面无效
+    public void afterCompletion(...){}
+}
+```
+
+#### 2. 配置拦截器
+
+```xml
+<mvc:interceptors>
+    <mvc:interceptor>
+        <!--要拦截的url-->
+        <mvc:mapping path="" />
+        <!--不要拦截的url-->
+        <mvc:exclude-mapping path="" />
+        <!--添加自定义拦截器-->
+        <bean class="com.de.interceptor.MyInterceptor">
+    </mvc:interceptor>
+</mvc:interceptors>
+
+注意: 当配置了多个拦截器时, 顺序与配置顺序相同
+如配置了两个拦截器, 都放行的情况下, 顺序如下:
+1pre
+2pre
+处理器方法执行
+2post
+1post
+跳转success.jsp
+2after
+1after
 ```
 
