@@ -112,7 +112,7 @@ PUT  localhost:9200/blog1
                 	"type": "text",
                     "store": true,
                     "index":"analyzed",
-                    "analyzer":"standard"
+                    "analyzer":"standard"  //配置分词器, 默认使用内置分词器
                 },
                 "content": {
                 	"type": "text",
@@ -265,7 +265,88 @@ POST  localhost:9200/blog1/article/_search
 
 **注意:** 默认分词组件是一个字一个字的分的, 所以查询的关键字也只有一个字才能匹配到. 如"修改...", 直接以"修改"为关键字无法查询到, 以"修"或者"改"为关键字可以查询到
 
+### 10. 集成KI分词器
 
+由于原生分词器只能一个字一个字拆分, 所以我们需要导入一个插件, 实现按词组拆分.
 
+**使用步骤:**
 
+1. 将KI分词器解压缩
+2. 将解压缩的文件拷贝进ElasticSearch的plugin目录下
+
+**两种划分算法:**
+
+IK分词器提供了两种分词算法, 一种是ik_smart, 为最少划分, 另一种是ik_max_word, 为最多单词划分. 以"我是程序员"为例
+
+使用ik_smart划分就是"我"、"是"、"程序员",
+
+而是用ik_max_word划分就是"我"、"是"、"程序员"、"程序"、"员"
+
+**测试:**
+
+```http
+http://127.0.0.1:9200/_analyze?analyzer=ik_smart&pretty=true&text=我是程序员
+```
+
+输出结果:
+
+```json
+{
+  "tokens" : [
+    {
+      "token" : "我",
+      "start_offset" : 0,
+      "end_offset" : 1,
+      "type" : "CN_CHAR",
+      "position" : 0
+    },
+    {
+      "token" : "是",
+      "start_offset" : 1,
+      "end_offset" : 2,
+      "type" : "CN_CHAR",
+      "position" : 1
+    },
+    {
+      "token" : "程序员",
+      "start_offset" : 2,
+      "end_offset" : 5,
+      "type" : "CN_WORD",
+      "position" : 2
+    }
+  ]
+}
+```
+
+**使用KI分词器:**
+
+使用KI分词器, 只需要在mapping中, 设置field的`analyzer`属性的值为"ik_smart"即可
+
+## 四、ES集群
+
+### 1. ES集群图解
+
+![](images/ES集群图解.png)
+
+### 2. 集群搭建
+
+每一个节点就是一个完整的ElasticSearch程序文件.  修改每个节点的config目录下的`ElasticSearch.yml`配置
+
+```yml
+#节点1的配置信息：
+#集群名称，保证唯一
+cluster.name: my-elasticsearch
+#节点名称，必须不一样
+node.name: node-1
+#必须为本机的ip地址
+network.host: 127.0.0.1
+#服务端口号，在同一机器下必须不一样
+http.port: 9200
+#集群间通信端口号，在同一机器下必须不一样
+transport.tcp.port: 9300
+#设置集群自动发现机器ip集合
+discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:9302"]
+```
+
+完成配置后, 启动每个节点, 集群就会自动搭建完毕
 
