@@ -350,3 +350,153 @@ discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:
 
 完成配置后, 启动每个节点, 集群就会自动搭建完毕
 
+
+
+## 五、Spring Data ElasticSearch
+
+### 1. 入门案例
+
+1. 导入相关jar包 `elasticSearch.jar`、`clientTransport` 、`spring-data-elasticSearch`
+
+2. 编写spring配置文件, 搭建ElasticSearch环境
+
+    ```xml
+    <!--设置-->
+    <elasticsearch:transport-client id="ESclient" cluster-name="my-elasticsearch" cluster-nodes="127.0.0.1:9301,127.0.0.1:9302" />
+    
+    <!--配置需要扫描的Dao接口的包路径-->
+    <elasticsearch:repositories base-package="com.dw.elasticsearch">
+    
+    <!--创建template对象-->
+    <bean id="esTemplate" class="...ElasticSearchTemplate">
+    	<constructor-arg name="client" ref="ESclient">
+    <bean>
+    ```
+
+3. 创建一个JavaBean, 该JavaBean映射为ElasticSearch中的Document. 对该Bean进行注解配置.
+
+    ```java
+    @Document(indexName="blog", type="article")
+    public class Article{
+        @Id
+        @Field(type=FieldType.text, store=true)
+        private String id;
+        
+        @Field(type=FieldType.text, store=true, analyzer="ik_smart")
+        private String title;
+        
+        private String content;
+        
+       	//setter and getter...
+        
+    }
+    ```
+
+4. 创建一个Dao接口, 该接口需要继承`ElasticsearchRepository`类
+
+    ```java
+    public interface EsDao extends ElasticsearchRepository{
+        //ElasticsearchRepository中有许多CRUD操作的方法
+    }
+    ```
+
+5. 创建测试类, 使用template进行操作
+
+    ```java
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration("classpath:....")
+    public class EsTest{
+        @Autowired
+        private EsDao esDao;
+        @Autowired
+        private ElasticSearchTemplate template;
+        
+        //创建索引和mapping
+        public void createIndex() throws Exception{
+            //根据注解创建索引并配置mapping
+            template.createIndex(Article.class);
+            //单独配置mapping
+            template.putMapping(Article.class);
+        }
+        
+        //CRUD
+        public void addDocument(){
+            Article article = new Article();
+            article.setId("0001");
+            article.setTitle("article1");
+            article.setContent("content1");
+            
+            //添加文档
+            //由于底层lucen的添加方式是先删除再添加, 所以save也有修改的功能
+            esDao.save(article);
+            
+            //删除文档
+            esDao.delete(article);
+            esDao.deleteById(id); //参数为long型
+            esDao.deleteAll();
+            
+            //查询
+            Interable<Article> articles = esDao.findAll();
+            Optional<Article> optional = esDao.findById(1);
+        }
+    }
+    ```
+
+### 2. 自定义查询
+
+有时候, 我们需要根据某个字段的值进行查询, 这时候ElasticsearchRepository的基本方法就无法满足, 这时候需要我们自己自定义查询方法. 自定义查询方法不需要具体的实现, 只需要按照Elasticsearch的规则进行相应的方法命名即可.
+
+命名规则:
+
+| 关键字        | 命名规则              | 解释                       | 示例                  |
+| ------------- | --------------------- | -------------------------- | --------------------- |
+| and           | findByField1AndField2 | 根据Field1和Field2获得数据 | findByTitleAndContent |
+| or            | findByField1OrField2  | 根据Field1或Field2获得数据 | findByTitleOrContent  |
+| is            | findByField           | 根据Field获得数据          | findByTitle           |
+| not           | findByFieldNot        | 根据Field获得补集数据      | findByTitleNot        |
+| between       | findByFieldBetween    | 获得指定范围的数据         | findByPriceBetween    |
+| lessThanEqual | findByFieldLessThan   | 获得小于等于指定值的数据   | findByPriceLessThan   |
+
+```java
+public interface esDao extends ElasticsearchRepository{
+    //根据Title查询(先分词再查询,每个词之间都是and关系, 即所有词都匹配成功, 才算成功)
+    List<Article> findByTitle(String title);
+        
+    //根据title或者content查询
+    List<Article> findByTitleOrContent(String title, String content);
+    
+    //分页查询
+    /*
+    	需要在调用中传递一个Pageable变量
+    	通过Pageable pageable = PageRequest.of(0, 15);
+    	第一个参数表示第几页
+    	第二个参数表示一页多少个
+    */
+     List<Article> findByTitleOrContent(String title, String content, Pageable pageable);
+} 
+```
+
+### 3. NativeSearchQuery
+
+由于在ElasticsearchRepository中, 分词查询的词之间是and关系, 如果希望只要有一个词满足要求就匹配成功, 那么需要用到`NativeSearchQuery`对象
+
+```java
+@Test
+public void nativeSearch(){
+     //创建一个SearchQuery对象
+     SearchQuery searchQuery = new NativeSearchQueryBuilder()
+                //设置查询条件，此处可以使用QueryBuilders创建多种查询, 如queryStringQuery、termQuery等
+                .withQuery(QueryBuilders.queryStringQuery("备份节点上没有数据").defaultField("title"))
+                //还可以设置分页信息
+                .withPageable(PageRequest.of(1, 5))
+                //创建SearchQuery对象
+                .build();
+
+
+        //使用模板对象执行查询
+        elasticsearchTemplate.queryForList(searchQuery, Article.class)
+                .forEach(a-> System.out.println(a));
+    
+}
+```
+
