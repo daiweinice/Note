@@ -17,6 +17,12 @@
 
 
 
+### 3. 学习参考资料
+
+ https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html 
+
+
+
 ## 二、ElasticSearch相关术语
 
 ### 1. ElasticSearch与关系型数据库术语区别
@@ -43,6 +49,14 @@ Elasticsearch -> Indices   -> Types  -> Documents -> Fields
 一个文档是一个可被索引的基础信息单元。比如，你可以拥有某一个客户的文档，某一个产品的一个文档，当然，也可以拥有某个订单的一个文档。文档以JSON（Javascript Object Notation）格式来表示，而JSON是一个到处存在的互联网数据交互格式。
 
 在一个index/type里面，你可以存储任意多的文档。注意，尽管一个文档，物理上存在于一个索引之中，文档必须被索引/赋予一个索引的type。
+
+一个文档中不仅仅包含数据, 还包含一些元数据. 这些元数据描述了文档的相关信息, 如:
+
+**_index**: 描述了文档存放在哪个索引中
+
+**_type**: 描述了文档存放在索引的哪个类型中
+
+**_id**: 作为文档的唯一标识
 
 #### (4) 字段 field
 
@@ -84,21 +98,14 @@ Elasticsearch是一个接近实时的搜索平台。这意味着，从索引一�
 
 
 
-## 三、使用ElasticSearch
+## 三、索引、映射、文档
 
-ElasticSearch通过简单的restful风格url, 执行相应的命令
+ElasticSearch通过简单的restful风格url, 执行相应的命令.
 
 ### 1. 创建索引并创建mapping
 
-请求url
-
 ```http
-PUT  localhost:9200/blog1
-```
-
-请求体:
-
-```json
+PUT  localhost:9200/{index}
 {
     "mappings": {
         "article": {
@@ -112,7 +119,7 @@ PUT  localhost:9200/blog1
                 	"type": "text",
                     "store": true,
                     "index":"analyzed",
-                    "analyzer":"standard"  //配置分词器, 默认使用内置分词器
+                    "analyzer":"standard"  //配置分词器, 默认使用内置标准分词器
                 },
                 "content": {
                 	"type": "text",
@@ -128,38 +135,30 @@ PUT  localhost:9200/blog1
 
 ### 2. 创建索引后, 再单独设置mapping
 
-请求url
-
 ```http
-POST  http://127.0.0.1:9200/blog2/hello/_mapping
-```
-
-请求体
-
-```json
+POST  /{index}/{type}/_mapping
 {
     "hello": {
-            "properties": {
-                "id":{
-                	"type":"long",
+        "properties": {
+            "id":{
+             	"type":"long",
                 	"store":true
-                },
-                "title":{
-                	"type":"text",
-                	"store":true,
-                	"index":true,
-                	"analyzer":"standard"
-                },
-                "content":{
-                	"type":"text",
-                	"store":true,
-                	"index":true,
-                	"analyzer":"standard"
-                }
+            },
+            "title":{
+                "type":"text",
+                "store":true,
+                "index":true,
+                "analyzer":"standard"
+            },
+            "content":{
+                "type":"text",
+                "store":true,
+                "index":true,
+                "analyzer":"standard"
             }
         }
-  }
-
+    }
+ }
 ```
 
 ### 3. 删除索引
@@ -168,69 +167,213 @@ POST  http://127.0.0.1:9200/blog2/hello/_mapping
 DELEETE  localhost:9200/blog1
 ```
 
-### 4. 创建文档
-
-请求url
+### 4. 添加文档
 
 ```http
-POST  localhost:9200/blog1/article/1
-```
-
-**注意:**url中最后的1不是id属性的值, 而是每个文档都有的`_id`属性的值, 这个属性用来标识每一个文档. 如果设置`-id`的值, 默认为自动生成的一串字符串
-
-请求体
-
-```json
+PUT  /{index}/{type}/{_id}
 {
-	"id":1,
-	"title":"标题属性的值",
-	"content":"内容属性的值"
+	"field": "value"
+	...
 }
 ```
 
-### 5. 修改文档
-
-请求url
-
 ```http
-POST  localhost:9200/blog1/article/1
-```
-
-请求体
-
-```json
+POST /{index}/{type}
 {
-	"id":1,
-	"title":"修改后的标题",
-	"content":"修改后的内容"
+	"field": "value"
+	...
 }
 ```
 
-### 6. 删除文档
-
 ```http
-DELETE  localhost:9200/blog1/article/1
+PUT /{index}/{type}/{_id}?op_type=create
+
+PUT /{index}/{type}/{_id}/_create
+
+此种情况下, 如果_id已存在, 则不会替换原文档, 而是报错
 ```
 
-### 7. 查询文档--根据id查询
-
-```http
-GET  localhost:9200/blog1/article/1
-```
-
-**注意:**这里的1对应的是`_id`属性的值
-
-### 8. 查询文档--querystring查询
-
-请求url
-
-```http
-POST  localhost:9200/blog1/article/_search
-```
+**注意:**第一种方式指定了id, 而第二种方式没有指定. 如果没有指定, 系统会自动生成一个字符串, 作为文档的_id.
 
 请求体
 
-```json
+### 5. 检查文档是否存在
+
+```http
+HEAD  /{index}/{type}/{_id}
+
+如果存在返回200状态码, 如果不存在返回404状态码
+```
+
+### 6. 更新文档
+
+```http
+PUT  /{index}/{type}/{_id}
+{
+	"field": "value"
+	...
+}
+```
+
+**注意:**更新文档的操作和添加一个文档的操作一样, 因为每次添加相同的id的文档, 都是先删除旧的文档, 再创建新的文档. 同时响应体中的`_version`字段的数字会发生变化. `_version`字段的作用是用于记录文档版本, 由于Elasticsearch是异步和并发的, 所以当多个更新操作并发到达时, `_version`可以为它们的执行进行排序, 最终更新版本最高的一次操作. 同时我们可以使用`PUT  /{index}/{type}/{_id}?version=1`来指定需要更新的文档版本, 若当前版本已经高于指定版本, 则更新取消. 这是一种==乐观的并发控制==
+
+### 7. 更新文档--部分更新
+
+```http
+PUT  /{index}/{type}/{_id}/_update
+{
+	"doc": {
+		"newField": "value",
+        "oldField": "newValue"
+	}
+}
+```
+
+### 8. 删除文档
+
+```http
+DELETE  /{index}/{type}/{_id}
+```
+
+**注意:**删除文档不会立刻删除, 只是先将该文档标记为已删除状态, 随着后续索引更多数据, 后台自动删除.
+
+### 9. 查询文档--根据id查询
+
+```http
+GET  /{index}/{type}/{_id}
+
+根据id查询, 响应体中_source字段对应查询到的数据
+```
+
+```http
+GET  /{index}/{type}/{_id}?_source=title,content
+
+只查询指定字段
+```
+
+```http
+GET  /{index}/{type}/{_id}/_source
+
+响应体中只包含数据, 不包含其他信息
+```
+
+###  10. 一次取回多个文档
+
+```http
+GET /_mget
+{
+   "docs" : [
+      {
+         "_index" : "website",
+         "_type" :  "blog",
+         "_id" :    2
+      },
+      {
+         "_index" : "website",
+         "_type" :  "pageviews",
+         "_id" :    1,
+         "_source": "views"
+      }
+   ]
+}
+```
+
+```http
+GET /{index}/{type}/_mget
+{
+   "ids" : [ "2", "1" ]
+}
+
+适用于同一index同一type的多个文档
+```
+
+
+
+## 四、搜索
+
+前面介绍了如何根据id获取整个文档,  ==但 Elasticsearch 真正强大之处在于可以从无规律的数据中找出有意义的信息——从“大数据”到“大信息”。== 
+
+ElasticSearch的搜索功能可以做到:
+
+- 在类似于 `gender` 或者 `age` 这样的字段上使用结构化查询，`join_date` 这样的字段上使用排序，就像SQL的结构化查询一样。
+- 全文检索，找出所有匹配关键字的文档并按照_相关性（relevance）_ 排序后返回结果。
+- 以上二者兼而有之。
+
+### 1. 空搜索
+
+```http
+GET  /_search
+
+返回所有文档
+```
+
+**响应体字段介绍:**
+
+1. **hits:** 有一个`total`记录查询到的文档数, 一个`hits`数组用于存储查询的文档(只包含前十个), 其中每个文档中有一个`_score`字段, 它衡量了文档与查询的匹配程度, 所有文档根据该分数按降序排列. hits中还有一个`max_score`用于记录最大分数
+2. **took:**查询花费了多少毫秒
+3. **shards:** 查询中参与分片的总数，以及这些分片成功了多少个失败了多少个。 
+4. **timeout:**查询是否超时. 可以通过`GET /_search?timeout=10ms`指定超时时间, 再超时之前, 已查询到的结果会被返回.
+
+### 2. 带索引、类型搜索
+
+**`/_search`**
+
+在所有的索引中搜索所有的类型
+
+**`/gb/_search`**
+
+在 `gb` 索引中搜索所有的类型
+
+**`/gb,us/_search`**
+
+在 `gb` 和 `us` 索引中搜索所有的文档
+
+**`/g\*,u\*/_search`**
+
+在任何以 `g` 或者 `u` 开头的索引中搜索所有的类型
+
+**`/gb/user/_search`**
+
+在 `gb` 索引中搜索 `user` 类型
+
+**`/gb,us/user,tweet/_search`**
+
+在 `gb` 和 `us` 索引中搜索 `user` 和 `tweet` 类型
+
+**`/_all/user,tweet/_search`**
+
+在所有的索引中搜索 `user` 和 `tweet` 类型
+
+### 3. 分页
+
+ElasticSearch通过`size`和`from`参数实现分页搜索.其中:
+
+`size`表示应该返回的结果数, 和每页个数
+
+`from`表示应该跳过的结果数.
+
+```http
+GET /_search?size=5
+```
+
+```http
+GET /_search?size=5&from=10
+
+从第三页开始
+```
+
+**深度分页造成的性能负荷:**
+
+由于ElasticSearch是多分片的, 如果要查询10条数据, 假设有5个分片, 那么每个分片会先查询出10条数据, 然后协调节点会对这50条数据进行排序, 最终返回前10条数据.
+
+现在假设我们请求第 1000 页—结果从 10001 到 10010 。所有都以相同的方式工作除了每个分片不得不产生前10010个结果以外。 然后协调节点对全部 50050 个结果排序最后丢弃掉这些结果中的 50040 个结果.
+
+可以看到，在分布式系统中，对结果排序的成本随分页的深度成指数上升。这就是 web 搜索引擎对任何查询都不要返回超过 1000 个结果的原因。  
+
+### 4. queryString
+
+```http
+POST /{index}/{type}/_search
 {
     "query": {
         "query_string": {
@@ -243,17 +386,10 @@ POST  localhost:9200/blog1/article/_search
 
 **注意:** 由于默认使用的分词组件是一个字一个字的拆分, 所以只要查询的内容中有query中的任意一个字, 即可被匹配到.
 
-### 9. 查询文档--term查询
-
-请求url
+### 5. term
 
 ```http
-POST  localhost:9200/blog1/article/_search
-```
-
-请求体
-
-```json
+POST  /{index}/{type}/_search
 {
     "query": {
         "term": {
@@ -265,7 +401,7 @@ POST  localhost:9200/blog1/article/_search
 
 **注意:** 默认分词组件是一个字一个字的分的, 所以查询的关键字也只有一个字才能匹配到. 如"修改...", 直接以"修改"为关键字无法查询到, 以"修"或者"改"为关键字可以查询到
 
-### 10. 集成KI分词器
+### 6. 集成KI分词器
 
 由于原生分词器只能一个字一个字拆分, 所以我们需要导入一个插件, 实现按词组拆分.
 
@@ -282,10 +418,14 @@ IK分词器提供了两种分词算法, 一种是ik_smart, 为最少划分, 另�
 
 而是用ik_max_word划分就是"我"、"是"、"程序员"、"程序"、"员"
 
-**测试:**
+**测试分析器:**
 
 ```http
-http://127.0.0.1:9200/_analyze?analyzer=ik_smart&pretty=true&text=我是程序员
+GET /_analyze
+{
+  "analyzer": "ik_smart",
+  "text": "我是程序员"
+}
 ```
 
 输出结果:
@@ -322,13 +462,47 @@ http://127.0.0.1:9200/_analyze?analyzer=ik_smart&pretty=true&text=我是程序�
 
 使用KI分词器, 只需要在mapping中, 设置field的`analyzer`属性的值为"ik_smart"即可
 
-## 四、ES集群
 
-### 1. ES集群图解
+
+## 五、ES集群
+
+### 1. 基本概念
+
+#### (1) 扩容
+
+服务器扩容的方式有两种, 一种是垂直扩容(提升单个服务器性能), 一种是水平扩容(增加服务器数量).  ElastiSearch天生就是分布式的，它知道如何通过管理多节点来提高扩容性和可用性。 所以搭建一个ElasticSearch集群非常简单.
+
+#### (2) 集群与节点
+
+在ElasticSearch中, 一个运行的实例就是一个节点, 而集群就是由一个或多个拥有相同的`cluster.name`配置的节点组成. 其中, 有一个主节点, 主节点负责管理集群范围内的所有变更，例如增加、删除索引，或者增加、删除节点等。 而主节点并不需要涉及到文档级别的变更和搜索等操作，所以当集群只拥有一个主节点的情况下，即使流量的增加它也不会成为瓶颈。  
+
+在ElasticSearch中, 所有节点都可以成为主节点, 任意一个节点都可以对任意文档进行操作.
+
+#### (3) 集群健康
+
+集群健康可以通过`GET "localhost:9200/_cluster/health"`进行查看, 它在`status`字段中展示为`green`、`yellow`、`red`. 其中
+
+green: 所有主分片和副本分片都正常运行
+
+yellow: 所有主分片正常, 但不是所有幅分片都正常
+
+red: 存在主分片异常
+
+#### (4) 主分片与副本分片
+
+一个分片是一个底层的工作单元, 是一个Lucene的实例. 一个索引只是一个逻辑命名空间, 它实际上是由多个分片构成的, 每一个分片仅保存全部数据的一部分. ElasticSearch集群会对分片进行自动管理, 使它们均匀分布在各个节点.
+
+虽然索引是由分片构成, 但是我们在使用ElasticSearch时, 是直接与索引进行交互的, 不用管分片的细节.
+
+图解:
 
 ![](images/ES集群图解.png)
 
-### 2. 集群搭建
+为了保证数据的防丢失. 一般会为每一个主分片设置一个副本分片,  副本分片作为硬件故障时保护数据不丢失的冗余备份，并为搜索和返回文档等读操作提供服务。 在主分片出现异常的时候, 副本分片会被提升为主分片.
+
+
+
+### 2. 搭建集群
 
 每一个节点就是一个完整的ElasticSearch程序文件.  修改每个节点的config目录下的`ElasticSearch.yml`配置
 
@@ -352,7 +526,7 @@ discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:
 
 
 
-## 五、Spring Data ElasticSearch
+## 六、Spring Data ElasticSearch
 
 ### 1. 入门案例
 
@@ -392,10 +566,15 @@ discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:
     }
     ```
 
-4. 创建一个Dao接口, 该接口需要继承`ElasticsearchRepository`类
+4. 创建一个Dao接口, 该接口需要继承`ElasticsearchRepository`接口.
 
     ```java
-    public interface EsDao extends ElasticsearchRepository{
+    /*
+    	ElasticsearchRepository接口使用了泛型
+    	第一个泛型参数为封装成文档的Bean
+    	第二个泛型参数为该文档的主键类型
+    */
+    public interface EsDao extends ElasticsearchRepository<Article, String>{
         //ElasticsearchRepository中有许多CRUD操作的方法
     }
     ```
