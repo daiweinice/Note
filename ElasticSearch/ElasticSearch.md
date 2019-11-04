@@ -615,6 +615,7 @@ discovery.zen.ping.unicast.hosts: ["127.0.0.1:9300","127.0.0.1:9301","127.0.0.1:
             esDao.deleteAll();
             
             //查询
+            //Interable接口是Java集合的顶级接口之一, 实现了它, 就可以使用foreach循环.集合Collection、List、Set都是Iterable的实现类，所以他们及其他们的子类都可以使用foreach进行迭代。
             Interable<Article> articles = esDao.findAll();
             Optional<Article> optional = esDao.findById(1);
         }
