@@ -187,3 +187,72 @@ Dubbo设计架构采用了订阅发布模式.
 ### 5. 注意事项
 
 1. 服务端需要实现接口, 同时消费者端也需要有相关接口的定义. 
+
+
+
+## 三、Spring Boot整合Dubbo
+
+1. 导入dubbo-spring-boot-starter
+
+2. 分别在服务端和消费者端配置`application.properties`(配置信息与spring标签+属性一一对应)
+
+    ```properties
+    dubbo.application.name=dubbo-test
+    dubbo.registry.address=zookeeper://127.0.0.1:2181
+    dubbo.monitor.protocol=registry
+    ```
+
+3. 在主程序中加上注解`@EnableDubbo`开启注解支持
+4. 在服务端接口实现类上加上注解`@Service` (改注解是Dubbo的注解)
+5. 在消费者端将`@Autowired`替换为`@Reference`
+
+
+
+## 四、Dubbo配置
+
+### 1. 配置优先级
+
+Dubbo有三种配置方式, 其中按优先级配置应该是
+
+(1) Java命令行配置 eg:`-Dubbo,protocol.port=20880`
+
+(2) XML配置
+
+(3) properties配置(在Spring Boot中在application.properties中配置, 在spring项目中在dubbo.properties中配置以替代在xml中配置, 一般公共的配置都可以在dubbo,properties中进行)
+
+
+
+### 2. 启动时检查
+
+在Dubbo中默认启动时检查是开启的, 如果消费者端先开启, 而服务端未开启, 则消费者端就算没调用接口, 也无法启动. 可以在消费者端通过配置关闭启动时检查
+
+```xml
+<dubbo:reference id="demoService" interface="org.apache.dubbo.demo.DemoService" check="false" />
+
+<!--还可以对所有消费者进行全局配置-->
+<dubbo:consumer中的配置就是一些dubbo:reference的默认配置>
+<dubbo:consumer check="false" />
+```
+
+配置注册中心未启动时, 服务端正常启动
+
+```xml
+<dubbo:registry check="false" />
+```
+
+
+
+### 3. Timeout
+
+为了避免响应时间过长, 可以设置超时时间.(默认为dubbo:consumer的配置 1000毫秒)
+
+```xml
+<dubbo:reference timeout="1000">
+```
+
+同一配置可以出现在很多不同的地方, 但是它们遵循一定的优先级:
+
+- 方法级优先，接口级次之，全局配置再次之。
+- 如果级别一样，则消费方优先，提供方次之。
+
+![](images\Dubbo 不同粒度配置优先级.jpg)
