@@ -192,6 +192,8 @@ Dubbo设计架构采用了订阅发布模式.
 
 ## 三、Spring Boot整合Dubbo
 
+### 1. 案例
+
 1. 导入dubbo-spring-boot-starter
 
 2. 分别在服务端和消费者端配置`application.properties`(配置信息与spring标签+属性一一对应)
@@ -202,9 +204,17 @@ Dubbo设计架构采用了订阅发布模式.
     dubbo.monitor.protocol=registry
     ```
 
-3. 在主程序中加上注解`@EnableDubbo`开启注解支持
+3. 在主程序中加上注解`@EnableDubbo`开启注解支持(包扫描), 也可以通过`dubbo.scan.base-packages`指定包路径
 4. 在服务端接口实现类上加上注解`@Service` (改注解是Dubbo的注解)
 5. 在消费者端将`@Autowired`替换为`@Reference`
+
+
+
+### 2. Spring Boot使用Dubbo的三种方式
+
+1. 使用`@Service`、`@Reference`、`@EnableDubbo`等注解. 在注解中可以配置对应属性的值, 如timeout、vresion、retries等
+2. 在主程序中使用`@ImportResource(locatios="classpath:dubbo.xml")`, 即可使用xml的方式进行配置
+3. 通过配置类进行配置(不建议)
 
 
 
@@ -256,3 +266,77 @@ Dubbo有三种配置方式, 其中按优先级配置应该是
 - 如果级别一样，则消费方优先，提供方次之。
 
 ![](images\Dubbo 不同粒度配置优先级.jpg)
+
+
+
+### 4. 重试次数
+
+有时与服务端连接超时, 可以设置重试次数来再次发送请求.
+
+如果有多个服务端, 那么在第一个服务端请求失败后, 重试时会重新向下一个服务端请求.
+
+```xml
+<dubbo:reference retries="3"/>
+```
+
+
+
+### 5. 多版本(灰度发布)
+
+服务端接口实现方法进行了更新, 但是还在测试阶段, 只需要一小部分消费者使用新的实现方法, 这时候就可以指定接口与接口实现类的版本来实现灰度发布.
+
+在服务端为接口实现类设置版本
+
+```xml
+ <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" version="2.0.0"/>
+```
+
+在消费者端设置调用的版本号
+
+```xml
+ <dubbo:reference id="demoService" interface="org.apache.dubbo.demo.DemoService" version="2.0.0"/>
+```
+
+
+
+### 6. 本地存根
+
+远程服务后，客户端通常只剩下接口，而实现全在服务器端，但提供方有些时候想在客户端也执行部分逻辑，比如：做 ThreadLocal 缓存，提前验证参数，调用失败后伪造容错数据等等，此时就需要在 API 中带上 Stub，客户端生成 Proxy 实例，会把 Proxy 通过构造函数传给 Stub，然后把 Stub 暴露给用户，Stub 可以决定要不要去调 Proxy。
+
+![](images\本地存根.jpg)
+
+在 spring 配置文件中按以下方式配置：
+
+```xml
+<dubbo:service interface="com.foo.BarService" stub="true" />
+```
+
+或
+
+```xml
+<dubbo:service interface="com.foo.BarService" stub="com.foo.BarServiceStub" />
+```
+
+提供 Stub 的实现：
+
+```java
+package com.foo;
+public class BarServiceStub implements BarService {
+    private final BarService barService;
+    
+    // 构造函数传入真正的远程代理对象
+    public BarServiceStub(BarService barService){
+        this.barService = barService;
+    }
+ 
+    public String sayHello(String name) {
+        // 此代码在客户端执行, 你可以在客户端做ThreadLocal本地缓存，或预先验证参数是否合法，等等
+        try {
+            return barService.sayHello(name);
+        } catch (Exception e) {
+            // 你可以容错，可以做任何AOP拦截事项
+            return "容错数据";
+        }
+    }
+}
+```
