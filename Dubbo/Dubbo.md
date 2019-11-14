@@ -212,7 +212,7 @@ Dubbo设计架构采用了订阅发布模式.
 
 ### 2. Spring Boot使用Dubbo的三种方式
 
-1. 使用`@Service`、`@Reference`、`@EnableDubbo`等注解. 在注解中可以配置对应属性的值, 如timeout、vresion、retries等
+1. 使用`@Service`、`@Reference`、`@EnableDubbo`等注解. 在注解中可以配置对应属性的值, 如timeout、vresion、retries等. 这些属性与xml中的属性是一一对应的.
 2. 在主程序中使用`@ImportResource(locatios="classpath:dubbo.xml")`, 即可使用xml的方式进行配置
 3. 通过配置类进行配置(不建议)
 
@@ -340,3 +340,86 @@ public class BarServiceStub implements BarService {
     }
 }
 ```
+
+
+
+## 五、Dubbo高可用
+
+### 1. ZooKeeper宕机与Dubbo直连
+
++ 监控中心宕机不会影响使用, 只是丢失部分采样数据
++ 数据库宕掉后, 注册中心任能够通过缓存提供服务列表查询, 但不能注册新服务
++ 注册中心对等集群, 任意一台宕掉后, 将自动切换到下一台
++ 注册中心全部宕掉后, 服务提供者和服务消费者任能通过本地缓存通讯
++ 服务提供者无状态, 任意一台宕掉后, 不影响使用
++ 服务提供者全部宕掉后, 服务消费者应用将无法使用. 并无限次重连等待服务提供者恢复
+
+
+
+消费者和服务者可以通过`url`属性进行直连, 绕过注册中心
+
+```xml
+<dubbo:reference url="127.0.0.1"/>
+```
+
+```java
+@Reference(url="127.0.0.1")
+```
+
+
+
+### 2. 负载均衡
+
+在集群负载均衡时，Dubbo 提供了多种均衡策略，缺省为 `random` 随机调用。 
+
+**集中负载均衡策略:**
+
++ **Random LoadBalance**
+
+    随机，按权重设置随机概率。
+
+    在一个截面上碰撞的概率高，但调用量越大分布越均匀，而且按概率使用权重后也比较均匀，有利于动态调整提供者权重。
+
++ **RoundRobin LoadBalance**
+
+    轮询，按公约后的权重设置轮询比率。
+
+    存在慢的提供者累积请求的问题，比如：第二台机器很慢，但没挂，当请求调到第二台时就卡在那，久而久之，所有请求都卡在调到第二台上。
+
++ **LeastActive LoadBalance**
+
+    最少活跃调用数，相同活跃数的随机，活跃数指调用前后计数差。
+
+    使慢的提供者收到更少请求，因为越慢的提供者的调用前后计数差会越大。
+
++ **ConsistentHash LoadBalance**
+
+    一致性 Hash，相同参数的请求总是发到同一提供者。
+
+可以在服务端也可以在消费端配置负载均衡策略
+
+```xml
+<dubbo:service interface="..." loadbalance="roundrobin" />
+```
+
+
+
+### 3. 服务降级
+
+可以通过服务降级功能 [[1\]](http://dubbo.apache.org/zh-cn/docs/user/demos/service-downgrade.html#fn1) 临时屏蔽某个出错的非关键服务，并定义降级后的返回策略。
+
+向注册中心写入动态配置覆盖规则：
+
+```java
+RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+Registry registry = registryFactory.getRegistry(URL.valueOf("zookeeper://10.20.153.10:2181"));
+registry.register(URL.valueOf("override://0.0.0.0/com.foo.BarService?category=configurators&dynamic=false&application=foo&mock=force:return+null"));
+```
+
+其中：
+
+- `mock=force:return+null` 表示消费方对该服务的方法调用都直接返回 null 值，不发起远程调用。用来屏蔽不重要服务不可用时对调用方的影响。
+- 还可以改为 `mock=fail:return+null` 表示消费方对该服务的方法调用在失败后，再返回 null 值，不抛异常。用来容忍不重要服务不稳定时对调用方的影响。
+
+
+
