@@ -139,7 +139,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
     + `docker ps -n x` : 显示最近创建的x个容器
     + `docker ps -q` : 静默模式, 只显示容器ID
     + `docker ps -no-trunc` : 显示完整容器信息
-+ `exit` : 停止容器并退出
++ `exit` : 停止容器并退出(在linux容器中才行, 相当于在容器中执行exit将其关闭)
 + `ctrl+P+Q` : 不停止退出容器
 + `docker attach 容器ID/容器名` : 进入正在运行的容器并以命令行的方式交互
 + `docker exec -it 容器ID/容器名 shell代码` : 在容器中执行指定shell, 但是不会以交互形式进入容器(如果是bin/bash命令则会进入)
