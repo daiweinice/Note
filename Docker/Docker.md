@@ -132,7 +132,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
     + `docker run -i image` : 以交互式方式运行容器, 常与-t同时使用
     + `docker run -t image` : 为容器重新分配一个输入终端
     + `docker run -P image` : 随机端口映射
-    + `docker run -p image` : 指定端口映射
+    + `docker run -p image` : 指定端口映射, 如:`docker run -p 8888:8080 tomcat `第一个端口号为docker对应容器访问端口号, 后一个端口号为tomcat的端口号, 创建容器后, 我们需通过8888端口进行访问, docker会自动映射到对应的8080端口, 为了方便, 通常将两个端口号设置为相同的.
 + `docker ps` : 列出当前正在运行的容器
     + `docker ps -a` : 列出当前正在运行的容器和历史上所有运行过的容器
     + `docker ps -l` : 显示最近创建的容器
@@ -158,3 +158,121 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
 ### 4. 命令图集
 
 ![](images/Docker命令.JPG)
+
+
+
+## 三、Docker镜像
+
+### 1. UnionFS(联合文件系统)
+
+UnionFS（联合文件系统）：Union文件系统（UnionFS）是一种分层、轻量级并且高性能的文件系统，它支持对文件系统的修改作为一次提交来一层层的叠加，同时可以将不同目录挂载到同一个虚拟文件系统下(unite several directories into a single virtual filesystem)。Union 文件系统是 Docker 镜像的基础。**镜像可以通过分层来进行继承，基于基础镜像（没有父镜像），可以制作各种具体的应用镜像。** 特性：一次同时加载多个文件系统，但从外面看起来，只能看到一个文件系统，联合加载会把各层文件系统叠加起来，这样最终的文件系统会包含所有底层的文件和目录 
+
+### 2. Docker镜像加载原理
+
+docker的镜像实际上由一层一层的文件系统组成，这种层级的文件系统叫UnionFS。
+
+bootfs(boot file system)主要包含bootloader和kernel, bootloader主要是引导加载kernel, Linux刚启动时会加载bootfs文件系统，在Docker镜像的最底层是bootfs。这一层与我们典型的Linux/Unix系统是一样的，包含boot加载器和内核。当boot加载完成之后整个内核就都在内存中了，此时内存的使用权已由bootfs转交给内核，此时系统也会卸载bootfs。 
+
+rootfs (root file system) ，在bootfs之上。包含的就是典型 Linux 系统中的 /dev, /proc, /bin, /etc 等标准目录和文件。rootfs就是各种不同的操作系统发行版，比如Ubuntu，Centos等等。 。 平时我们安装进虚拟机的CentOS都是好几个G，为什么docker这里才200M？？对于一个精简的OS，rootfs可以很小，只需要包括最基本的命令、工具和程序库就可以了，因为底层直接用Host的kernel，自己只需要提供 rootfs 就行了。由此可见对于不同的linux发行版, bootfs基本是一致的, rootfs会有差别, 因此不同的发行版可以公用bootfs。  
+
+### 3. 为什么docker镜像采用这种分层结构?
+
+最大的一个好处就是**共享资源** 
+
+Docker镜像都是只读的, 当容器启动时，一个新的可写层被加载到镜像的顶部。这一层通常被称作“容器层”，“容器层”之下的都叫“镜像层”。
+
+当有多个镜像都从相同的 base 镜像构建而来，那么宿主机只需在磁盘上保存一份base镜像，同时内存中也只需加载一份 base 镜像，就可以为所有容器服务了。而且镜像的每一层都可以被共享。 
+
+比如创建一个Tomcat容器, Tomcat镜像的内层就包含了java镜像, 所以后续需要依赖java环境的其它容器就可以和该容器共享该java镜像.
+
+### 4. 创建自己的镜像
+
+当我们pull了一个镜像, 并创建了容器, 并在容器中进行了自己的配置后, 我们可以将这个配置后的容器制作成一个新的镜像, 这个镜像会保留我们自己的配置.
+
+`docker commit -m="提交信息" -a="作者名" 容器ID 要创建的镜像名:tag`
+
+
+
+## 四、Docker容器数据卷
+
+有时候, 我们需要保存我们容器中的数据, 这时候就需要用到容器数据卷.
+
+容器数据卷的作用就是实现容器持久化和容器间集成与共享数据
+
+### 1. 命令方式实现持久化
+
+`docker run -it -v /宿主机绝对路径目录:/容器内目录 镜像名`
+
+执行完后, 容器对应目录和主机对应目录的文件与数据都是同步的. 容器中新建文件, 则主机对应目录也会新建文件. 容器中修改文件, 主机中对应目录也会修改文件. 如果容器被关闭了, 重新启动后, 由于主机中有文件, 所以重启的容器中也会有相应的文件.
+
+`docker run -it -v /宿主机绝对路径目录:/容器内目录:ro 镜像名`
+
+上述命令加入了权限控制, 即容器中对应目录只能进行读操作, 也就是说容器中无法对目录下的文件进行任何读操作, 只能单向同步主机中对相应目录文件的修改.
+
+### 2. Dockerfile方式
+
+1. 在根目录下新建mydocker文件夹并进入
+
+2. 创建一个文件dockerfile
+
+    ```dockerfile
+     # volume test
+     FROM centos
+     #创建对应的共享文件夹(数据卷)
+     VOLUME ["/dataVolumeContainer1","/dataVolumeContainer2"]
+     CMD echo "finished,--------success1"
+     CMD /bin/bash 
+    ```
+
+3. 通过`docker build -f /mydocker/dockerfile -t 要创建的镜像名 .`来创建镜像
+4. 运行该镜像
+5. 默认会有一个主机的对应目录, 可以通过`docker inspect 容器ID`查看
+
+### 3. 数据卷容器
+
+实现容器之间的数据卷的继承, 以实现容器之间数据卷的传递
+
+`docker run -it --volume-from 继承容器ID/名 镜像名`
+
+这样创建的容器和继承的容器之间是共享数据卷的
+
+实际上, 所有的父与子容器的数据卷都可以完全同步, 无论父容器或子容器被关闭, 只要有任意一个容器存在, 那么其他容器重启后, 都可以同步到未关闭的容器的数据卷.
+
+
+
+## 五、Dockerfile
+
+### 1. Dockerfile是什么?
+
+dockerfile是用来构建镜像的构建文件. 由一系列命令和参数构成, 可以通过`docker build`命令来执行dockerfile构建镜像
+
+### 2. Docker基础
+
+1. 每条指令保留关键字都必须大写, 且其后至少要有一个参数
+2. 指令按照从上到下顺序执行
+3. #为注释符号
+4. 每条指令都会创建一个新的镜像层, 并对镜像进行提交
+
+### 3. Docker执行dockerfile的基本流程
+
+1. Docker从基础镜像中运行一个容器
+2. 执行一条指令, 对容器进行一次修改
+3. 执行类似`docker commit` 的操作提交一个新的镜像
+4. docker再根据新镜像运行一个新容器
+5. 重复2、3、4直到指令执行完
+
+### 4. 指令保留关键字
+
+1. **FROM** : 指定基础镜像(当前新镜像是基于哪个镜像的)
+2. **MAINTAINER** : 镜像维护者的姓名和邮箱地址
+3. **RUN** : 容器构建时需要运行的命令
+4. **EXPOSE** : 当前容器对外暴露出的端口
+5. **WORKDIR** : 指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点
+6. **ENV** : 用来在构建镜像过程中设置环境变量
+7. **ADD** : 将宿主机目录下的文件拷贝进镜像且ADD命令会自动处理URL和解压tar压缩包
+8. **COPY** : 类似ADD，拷贝文件和目录到镜像中 `COPY src dest`、`COPY ["src", "dest"]`
+9. **VOLUME** : 容器数据卷，用于数据保存和持久化工作 `VOLUME ["/docs1", "docs2"]`
+10. **CMD** : 指定一个容器启动时要运行的命令(Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，CMD 会被 docker run 之后的参数替换)
+11. **ENTRYPOINT** : 指定一个容器启动时要运行的命令(与CMD相比, 每一个命令都会被执行)
+12. **ONBUILD** : 当构建一个被继承的Dockerfile时运行命令，父镜像在被子继承后父镜像的onbuild被触发
+
