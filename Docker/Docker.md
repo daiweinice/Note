@@ -133,6 +133,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
     + `docker run -t image` : 为容器重新分配一个输入终端
     + `docker run -P image` : 随机端口映射
     + `docker run -p image` : 指定端口映射, 如:`docker run -p 8888:8080 tomcat `第一个端口号为docker对应容器访问端口号, 后一个端口号为tomcat的端口号, 创建容器后, 我们需通过8888端口进行访问, docker会自动映射到对应的8080端口, 为了方便, 通常将两个端口号设置为相同的.
+    + `docker run -e key=value` : 配置参数, 如在mysql中, 通过`docker run -e MYSQL_ROOT_PASSWORD=12345`来设置初始密码
 + `docker ps` : 列出当前正在运行的容器
     + `docker ps -a` : 列出当前正在运行的容器和历史上所有运行过的容器
     + `docker ps -l` : 显示最近创建的容器
@@ -154,6 +155,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
 + `docker top 容器名/容器ID` : 查看容器内运行的进程
 + `docker inspect 容器名/容器ID` : 查看容器内部细节
 + `docker cp 容器ID:文件路径 主机文件路径` : 将容器中的文件拷贝到主机上
++ `docker cp 主机文件路径 容器ID:文件路径` : 将主机文件拷贝到容器中
 
 ### 4. 命令图集
 
@@ -268,11 +270,11 @@ dockerfile是用来构建镜像的构建文件. 由一系列命令和参数构�
 3. **RUN** : 容器构建时需要运行的命令
 4. **EXPOSE** : 当前容器对外暴露出的端口
 5. **WORKDIR** : 指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点
-6. **ENV** : 用来在构建镜像过程中设置环境变量
+6. **ENV** : 用来在构建镜像过程中设置环境变量. 如: `ENV path /user/local`后面就可以通过`$path`来进行引用
 7. **ADD** : 将宿主机目录下的文件拷贝进镜像且ADD命令会自动处理URL和解压tar压缩包
 8. **COPY** : 类似ADD，拷贝文件和目录到镜像中 `COPY src dest`、`COPY ["src", "dest"]`
 9. **VOLUME** : 容器数据卷，用于数据保存和持久化工作 `VOLUME ["/docs1", "docs2"]`
 10. **CMD** : 指定一个容器启动时要运行的命令(Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，CMD 会被 docker run 之后的参数替换)
-11. **ENTRYPOINT** : 指定一个容器启动时要运行的命令(与CMD相比, 每一个命令都会被执行)
-12. **ONBUILD** : 当构建一个被继承的Dockerfile时运行命令，父镜像在被子继承后父镜像的onbuild被触发
+11. **ENTRYPOINT** : 指定一个容器启动时要运行的命令. docker run 之后的参数会被追加而不是替换. 如`docker run myip -i`命令, 原`ENTRYPOINT ["curl","-s","www.ip.cn"]`不会被覆盖, 而会被追加变成`curl -s -i www.ip.cn`
+12. **ONBUILD** : FROM 父镜像，父镜像在被子镜像继承后父镜像的onbuild被触发, 执行相关命令. 如: `ONBUILD RUN echo "success!"`
 
