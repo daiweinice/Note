@@ -118,7 +118,9 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 
 
 
-## 四、RabbitMQ命令行操作
+## 四、RabbitMQ基础
+
+### 1. 命令行操作
 
 RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`、`rabbitmq-plugins`. 其中`rabbitmqctl`功能最丰富, `rabbitmq-plugins`用于插件管理.
 
@@ -128,9 +130,46 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
 + `rabbitmqctl stop_app` : 关闭应用
 + `rabbitmqctl status` : 查看节点状态
 
+### 2. RabbitMQ Exchange
+
+#### (1) 属性
+
++ **Name:** 交换机名称
++ **Type:** 交换机类型direct、topic、fanout、headers
++ **Durability:** 持久化
++ **Auto delete:** 当最后绑定在Exchange上的队列删除后, 自动删除该Exchange
++ **Internal:** 是否用于RabbitMQ内部使用, 默认为false
++ **Arguments:** 扩展参数, 用于扩展AMQP协议定制化使用
+
+#### (2) Exchange类型
+
++ **Direct Exchange**
+
+    在代码创建Exchange时, 需要将队列、Exchange、Routing Key三者绑定在一起.
+
+    所有发送到Direct Exchange的消息会被转发到消息Routing Key与队列Routing Key相同的队列.
+
++ **Topic Exchange**
+
+    发送到Topic Exchange中的消息, 会被转发到与消息有相同Topic的队列中.
+
+    可以模糊匹配Topic, 其中#表示一个或多个词, *表示一个词.
+
+     比如消息Routing Key为user.name, 那么其可以发送到Routing Key为user.#的队列中
+
+    ![](images/Topic Exchage.png)
 
 
-## 五、RabbitMQ Java API
+
++ **Fanout Exchange**
+
+    无需Routing Key, 发送到Fanout Exchange的消息, 会转发给其所有绑定的队列.
+
+    ![](images/Fanout Exchage.png)
+
+
+
+### 3. RabbitMQ Java API
 
 1. 导入相关jar包: `amqp-client`
 
@@ -228,44 +267,34 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
 **注意:**
 
 + 我们在生产者端通过channel发送信息时并没有指定对应的exchange, 但是消费者还是收到了生产者的消息. 这是因为在不指定exchange的情况下, 默认会有一个default exchange, 此时会从所有队列中匹配与routing key相同名字的队列, 将消息保存到该队列中.
-
 + 当消费者接收到消息后, 该消息就会从消息队列中删除.
 
 
 
-## 六、RabbitMQ Exchange
+## 五、RabbitMQ高级
 
-### 1. 属性
+### 1. 如何保证消息100%投递成功?
 
-+ **Name:** 交换机名称
-+ **Type:** 交换机类型direct、topic、fanout、headers
-+ **Durability:** 持久化
-+ **Auto delete:** 当最后绑定在Exchange上的队列删除后, 自动删除该Exchange
-+ **Internal:** 是否用于RabbitMQ内部使用, 默认为false
-+ **Arguments:** 扩展参数, 用于扩展AMQP协议定制化使用
+#### (1) 消息落库, 对消息状态进行打标(更新消息状态)
 
-### 2. Exchange类型
+首先除了业务入库外(BIZ DB), 消息也应该入库(MSG DB), 当消息发送到MQ Broker时, Broker返回一个确认, 然后更新数据库中消息的状态.
 
-+ **Direct Exchange**
+这个过程中会添加一个分布式定时任务, 当定时时间到时, 会检查消息数据库中消息的状态, 如果状态为0则重新给Broker发送一次消息, 当然重发也应该有次数限制.
 
-    在代码创建Exchange时, 需要将队列、Exchange、Routing Key三者绑定在一起.
-
-    所有发送到Direct Exchange的消息会被转发到消息Routing Key与队列Routing Key相同的队列.
-
-+ **Topic Exchange**
-
-    发送到Topic Exchange中的消息, 会被转发到与消息有相同Topic的队列中.
-
-    可以模糊匹配Topic, 其中#表示一个或多个词, *表示一个词.
-
-     比如消息Routing Key为user.name, 那么其可以发送到Routing Key为user.#的队列中
-
-    ![](images/Topic Exchage.png)
+![](images/可靠性投递 1.png)
 
 
 
-+ **Fanout Exchange**
+#### (2) 消息的延迟投递, 做二次确认, 回调检查
 
-    无需Routing Key, 发送到Fanout Exchange的消息, 会转发给其所有绑定的队列.
+首先只需要将业务入库(BIZ DB), 发送消息给MQ Broker, 并且在延迟一段时间后再发送一次消息.
 
-    ![](images/Fanout Exchage.png)
+当消费者端监听到生产者的消息后, 收到消息后会发送一个确认消息给Broker.
+
+CallBack service负责监听这个确认消息, 当监听到确认消息后, 说明消息投递成功, 并将消息写入数据库(MSG DB).
+
+CallBack service同时还负责监听延迟消息, 监听到延迟消息后, 会从数据库中查询是否有对应的消息, 如果没有则会让生产者再次发送该消息.
+
+这种方法与第一种方法相比, 减少了数据库的写入次数, 提高效率.
+
+![](images/可靠性投递 2.png)
