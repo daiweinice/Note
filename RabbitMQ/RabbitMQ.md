@@ -66,10 +66,10 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 + **Connection:** 连接, 应用程序与Broker的网络连接
 + **Channel:** 网络信道, 几乎所有的操作都在Channel中进行, Channel是进行消息读写的通道. 客户端可建立多个Channel, 每个Channel代表一个会话任务.
 + **Message:** 消息, 服务器和应用程序之间传送的数据. 由Properties和Body组成. Properties可以对消息进行修饰, 比如消息的优先级、延迟等高级特性; Body就是消息体内容.
-+ **Virtual host:** 虚拟地址, 用于进行逻辑隔离, 最上层的消息路由. 一个Virtual host里可以由若干个Exchange和Queue, 同一个Virtual host里面不能有相同名称的Exchange或Queue
-+ **Exchange:** 交换机, 接收消息, 根据路由键转发消息到绑定的队列
++ **Virtual host:** 虚拟地址, 用于进行==逻辑隔离==, 最上层的消息路由. 一个Virtual host里可以由若干个Exchange和Queue, 同一个Virtual host里面不能有相同名称的Exchange或Queue
++ **Exchange:** 交换机, 接收消息, 根据路由键转发消息到绑定的队列(注意队列要与交换机绑定).
 + **Binding:** Exchange和Queue之间的虚拟连接, Binding中可以包含路由键(routing key)
-+ **Routing key:** 一个路由规则, Virtual host可用它确定如何路由一个特定消息
++ **Routing key:** 一个路由规则, Virtual host可用它确定如何路由一个特定消息. 比如在Direct Exchange中, 当队列的Routing Key与消息的Routing Key一致时, 交换机就会将消息存入该队列.
 + **Queue:** 也成为Message Queue, 消息队列, 保存消息并将它们转发给消费者
 
 #### (4) RabbitMQ架构图
@@ -203,7 +203,7 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
     		
     		//4 声明（创建）一个队列
     		String queueName = "test001";
-            //参数2 队列持久化  参数3 独占队列  参数4 是否自动删除(队列长时间不使用会被删除)  参数5 其他参数(此处为一个Map<String, Object>对象)
+            //参数2 队列持久化  参数3 独占队列  参数4 是否自动删除(最后一个监听被移除后队列会被自动删除)  参数5 其他参数(此处为一个Map<String, Object>对象)
     		channel.queueDeclare(queueName, true, false, false, null);
     		
     		//5 创建消费者
@@ -223,10 +223,49 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
     		
     	}
     }
-```
-    
-    
+    ```
 
 **注意:**
 
 + 我们在生产者端通过channel发送信息时并没有指定对应的exchange, 但是消费者还是收到了生产者的消息. 这是因为在不指定exchange的情况下, 默认会有一个default exchange, 此时会从所有队列中匹配与routing key相同名字的队列, 将消息保存到该队列中.
+
++ 当消费者接收到消息后, 该消息就会从消息队列中删除.
+
+
+
+## 六、RabbitMQ Exchange
+
+### 1. 属性
+
++ **Name:** 交换机名称
++ **Type:** 交换机类型direct、topic、fanout、headers
++ **Durability:** 持久化
++ **Auto delete:** 当最后绑定在Exchange上的队列删除后, 自动删除该Exchange
++ **Internal:** 是否用于RabbitMQ内部使用, 默认为false
++ **Arguments:** 扩展参数, 用于扩展AMQP协议定制化使用
+
+### 2. Exchange类型
+
++ **Direct Exchange**
+
+    在代码创建Exchange时, 需要将队列、Exchange、Routing Key三者绑定在一起.
+
+    所有发送到Direct Exchange的消息会被转发到消息Routing Key与队列Routing Key相同的队列.
+
++ **Topic Exchange**
+
+    发送到Topic Exchange中的消息, 会被转发到与消息有相同Topic的队列中.
+
+    可以模糊匹配Topic, 其中#表示一个或多个词, *表示一个词.
+
+     比如消息Routing Key为user.name, 那么其可以发送到Routing Key为user.#的队列中
+
+    ![](images/Topic Exchage.png)
+
+
+
++ **Fanout Exchange**
+
+    无需Routing Key, 发送到Fanout Exchange的消息, 会转发给其所有绑定的队列.
+
+    ![](images/Fanout Exchage.png)
