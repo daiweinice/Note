@@ -75,3 +75,158 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 #### (4) RabbitMQ架构图
 
 ![](images/RabbitMQ架构图.jpg)
+
+
+
+## 三、RabbitMQ安装
+
+1. 准备编译环境
+
+    ```shell
+    yum install 
+    build-essential openssl openssl-devel unixODBC unixODBC-devel 
+    make gcc gcc-c++ kernel-devel m4 ncurses-devel tk tc xz
+    ```
+
+2. 下载相关rpm包(这里使用rpm安装方式, 可以自动进行配置环境变量等操作, 更适合初学者)
+
+    因为RabbitMQ是由Erlang语言编写的, 所以需要先安装Erlang.
+
+    socat也是其依赖环境
+
+    ```shell
+    rpm -ivh erlang-18.3-1.el7.centos.x86_64.rpm
+    rpm -ivh socat-1.7.3.2-5.el7.lux.x86_64.rpm
+    rpm -ivh rabbitmq-server-3.6.5-1.noarch.rpm
+    ```
+
+3. 修改配置文件
+
+    配置文件是以json格式编写的, 可进行相应的更改.
+
+    修改loopback_users中的<<"guest">>替换为guest
+
+    ```shell
+    vim /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.5/ebin/rabbit.app
+    ```
+
+4. 通过`rabbitmq-server start &`启动, 其中&表示后台启动
+
+5. 通过`rabbitmq-plugins enable rabbitmq-management`安装管控台插件, 安装后可以通过`15672`端口访问图形化管理界面
+
+6. 通过`rabbitmqctl app_stop`停止服务
+
+
+
+## 四、RabbitMQ命令行操作
+
+RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`、`rabbitmq-plugins`. 其中`rabbitmqctl`功能最丰富, `rabbitmq-plugins`用于插件管理.
+
+==另外, 大多数命令行能完成的操作, 在图形化管控台中也可以完成.==
+
++ `rabbitmqctl start_app` : 开启应用
++ `rabbitmqctl stop_app` : 关闭应用
++ `rabbitmqctl status` : 查看节点状态
+
+
+
+## 五、RabbitMQ Java API
+
+1. 导入相关jar包: `amqp-client`
+
+2. 编写Producer类
+
+    ```java
+    package com.bfxy.rabbitmq.quickstart;
+    
+    import com.rabbitmq.client.Channel;
+    import com.rabbitmq.client.Connection;
+    import com.rabbitmq.client.ConnectionFactory;
+    
+    public class Procuder {
+    
+    	
+    	public static void main(String[] args) throws Exception {
+    		//1 创建一个ConnectionFactory, 并进行配置
+    		ConnectionFactory connectionFactory = new ConnectionFactory();
+    		connectionFactory.setHost("192.168.11.76");
+    		connectionFactory.setPort(5672);
+    		connectionFactory.setVirtualHost("/");
+    		
+    		//2 通过连接工厂创建连接
+    		Connection connection = connectionFactory.newConnection();
+    		
+    		//3 通过connection创建一个Channel
+    		Channel channel = connection.createChannel();
+    		
+    		//4 通过Channel发送数据
+    		for(int i=0; i < 5; i++){
+    			String msg = "Hello RabbitMQ!";
+    			//参数1 exchange  参数2 routingKey  参数3 properties  参数4 body
+    			channel.basicPublish("", "test001", null, msg.getBytes());
+    		}
+    
+    		//5 记得要关闭相关的连接
+    		channel.close();
+    		connection.close();
+    	}
+    }
+    ```
+
+3. 编写Consumer类
+
+    ```java
+    package com.bfxy.rabbitmq.quickstart;
+    
+    import com.rabbitmq.client.Channel;
+    import com.rabbitmq.client.Connection;
+    import com.rabbitmq.client.ConnectionFactory;
+    import com.rabbitmq.client.Envelope;
+    import com.rabbitmq.client.QueueingConsumer;
+    import com.rabbitmq.client.QueueingConsumer.Delivery;
+    
+    public class Consumer {
+    
+    	public static void main(String[] args) throws Exception {
+    		
+    		//1 创建一个ConnectionFactory, 并进行配置
+    		ConnectionFactory connectionFactory = new ConnectionFactory();
+    		connectionFactory.setHost("192.168.11.76");
+    		connectionFactory.setPort(5672);
+    		connectionFactory.setVirtualHost("/");
+    		
+    		//2 通过连接工厂创建连接
+    		Connection connection = connectionFactory.newConnection();
+    		
+    		//3 通过connection创建一个Channel
+    		Channel channel = connection.createChannel();
+    		
+    		//4 声明（创建）一个队列
+    		String queueName = "test001";
+            //参数2 队列持久化  参数3 独占队列  参数4 是否自动删除(队列长时间不使用会被删除)  参数5 其他参数(此处为一个Map<String, Object>对象)
+    		channel.queueDeclare(queueName, true, false, false, null);
+    		
+    		//5 创建消费者
+    		QueueingConsumer queueingConsumer = new QueueingConsumer(channel);
+    		
+    		//6 设置Channel
+            //参数2 autoask 消费者收到broker的消息后, 会返回一个ask签收信息, 这里指定是否自动签收
+    		channel.basicConsume(queueName, true, queueingConsumer);
+    		
+    		while(true){
+    			//7 获取消息
+    			Delivery delivery = queueingConsumer.nextDelivery();
+    			String msg = new String(delivery.getBody());
+    			System.err.println("消费端: " + msg);
+    			//Envelope envelope = delivery.getEnvelope();
+    		}
+    		
+    	}
+    }
+```
+    
+    
+
+**注意:**
+
++ 我们在生产者端通过channel发送信息时并没有指定对应的exchange, 但是消费者还是收到了生产者的消息. 这是因为在不指定exchange的情况下, 默认会有一个default exchange, 此时会从所有队列中匹配与routing key相同名字的队列, 将消息保存到该队列中.
