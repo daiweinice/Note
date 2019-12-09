@@ -29,10 +29,13 @@ public class Consumer {
 		channel.queueDeclare(queueName, true, false, false, null);
 		channel.queueBind(queueName, exchangeName, routingKey);
 		
-		//1 限流方式  第一件事就是 autoAck设置为 false
-		
+		//设置消费者的最大处理数
+		//第一个参数表示消息的大小限制, 0表示不限制
+		//第二个参数表示同时处理的最大消息数
+		//第三个参数表示限制范围是否是global. 如果是true则表示所有使用该channel的客户端都进行限制, false表示对单个消费者客户端进行限制
 		channel.basicQos(0, 1, false);
 		
+		//如果要进行限制, 需要先将自动应答autoask设置为false
 		channel.basicConsume(queueName, false, new MyConsumer(channel));
 		
 		

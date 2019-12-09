@@ -28,15 +28,19 @@ public class Producer {
 		
 		for(int i =0; i<5; i ++){
 			
+			//消息的自定义属性
 			Map<String, Object> headers = new HashMap<String, Object>();
 			headers.put("num", i);
 			
+			//设置消息的properties
 			AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
 					.deliveryMode(2)
 					.contentEncoding("UTF-8")
 					.headers(headers)
 					.build();
+
 			String msg = "Hello RabbitMQ ACK Message " + i;
+
 			channel.basicPublish(exchange, routingKey, true, properties, msg.getBytes());
 		}
 		

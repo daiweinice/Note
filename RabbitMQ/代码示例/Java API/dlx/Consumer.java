@@ -31,6 +31,7 @@ public class Consumer {
 		channel.exchangeDeclare(exchangeName, "topic", true, false, null);
 		
 		Map<String, Object> agruments = new HashMap<String, Object>();
+		//dlx.exchange为死信队列的名字
 		agruments.put("x-dead-letter-exchange", "dlx.exchange");
 		//这个agruments属性，要设置到声明队列上
 		channel.queueDeclare(queueName, true, false, false, agruments);

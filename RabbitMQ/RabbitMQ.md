@@ -68,7 +68,7 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 + **Message:** 消息, 服务器和应用程序之间传送的数据. 由Properties和Body组成. Properties可以对消息进行修饰, 比如消息的优先级、延迟等高级特性; Body就是消息体内容.
 + **Virtual host:** 虚拟地址, 用于进行==逻辑隔离==, 最上层的消息路由. 一个Virtual host里可以由若干个Exchange和Queue, 同一个Virtual host里面不能有相同名称的Exchange或Queue
 + **Exchange:** 交换机, 接收消息, 根据路由键转发消息到绑定的队列(注意队列要与交换机绑定).
-+ **Binding:** Exchange和Queue之间的虚拟连接, Binding中可以包含路由键(routing key)
++ **Binding:** Exchange和Queue之间的虚拟连接, Binding中可以包含路由键(routing key), 这个路由键就是用来匹配Queue和Message的.
 + **Routing key:** 一个路由规则, Virtual host可用它确定如何路由一个特定消息. 比如在Direct Exchange中, 当队列的Routing Key与消息的Routing Key一致时, 交换机就会将消息存入该队列.
 + **Queue:** 也成为Message Queue, 消息队列, 保存消息并将它们转发给消费者
 
@@ -166,8 +166,6 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
     无需Routing Key, 发送到Fanout Exchange的消息, 会转发给其所有绑定的队列.
 
     ![](images/Fanout Exchage.png)
-
-
 
 ### 3. RabbitMQ Java API
 
@@ -298,3 +296,185 @@ CallBack service同时还负责监听延迟消息, 监听到延迟消息后, 会
 这种方法与第一种方法相比, 减少了发送消息前数据库的写入次数, 提高了并发量和效率. 消息入库被单独成一个服务, 这个服务是作为一个补充的服务, 并不在核心链路上, 这样的解耦使得在高并发情况下核心链路的并发量得到提高.
 
 ![](images/可靠性投递 2.png)
+
+
+
+### 2. 幂等性问题
+
+#### (1) 什么是幂等性?
+
+一次和多次请求某一个资源对于资源本身应该具有同样的结果（网络超时等问题除外）。也就是说，其任意多次执行对资源本身所产生的影响均与一次执行的影响相同。
+
+这里需要关注几个重点：
+
++ 幂等不仅仅只是一次（或多次）请求对资源没有副作用（比如查询数据库操作，没有增删改，因此没有对数据库有任何影响）。
+
++ 幂等还包括第一次请求的时候对资源产生了副作用，但是以后的多次请求都不会再对资源产生副作用。
+
++ 幂等关注的是以后的多次请求是否对资源产生的副作用，而不关注结果。
+
++ 网络超时等问题，不是幂等的讨论范围。
+
+#### (2) 什么情况下需要幂等?
+
+业务开发中，经常会遇到重复提交的情况，无论是由于网络问题无法收到请求结果而重新发起请求，或是前端的操作抖动而造成重复提交情况。 在交易系统，支付系统这种重复提交造成的问题有尤其明显，比如：
+
++ 用户在APP上连续点击了多次提交订单，后台应该只产生一个订单；
+
++ 向支付宝发起支付请求，由于网络问题或系统BUG重发，支付宝应该只扣一次钱。 
+
+很显然，声明幂等的服务认为，外部调用者会存在多次调用的情况，为了防止外部多次调用对系统数据状态的发生多次改变，将服务设计成幂等。
+
+以SQL为例，有下面三种场景，只有第三种场景需要开发人员使用其他策略保证幂等性：
+
+1. `SELECT col1 FROM tab1 WHER col2=2`，无论执行多少次都不会改变状态，是天然的幂等。
+2. `UPDATE tab1 SET col1=1 WHERE col2=2`，无论执行成功多少次状态都是一致的，因此也是幂等操作。
+3. `UPDATE tab1 SET col1=col1+1 WHERE col2=2`，每次执行的结果都会发生变化，这种不是幂等的。
+
+#### (3) 幂等与防重
+
+重复提交是在第一次请求已经成功的情况下，人为的进行多次操作，导致不满足幂等要求的服务多次改变状态。
+
+而幂等更多使用的情况是第一次请求不知道结果（比如超时）或者失败的异常情况下，发起多次请求，目的是多次确认第一次请求成功，却不会因多次请求而出现多次的状态变化。 
+
+#### (4) 如何保证幂等
+
+幂等需要通过**唯一的业务单号**来保证。也就是说相同的业务单号，认为是同一笔业务。使用这个唯一的业务单号来确保，后面多次的相同的业务单号的处理逻辑和执行效果是一致的。 下面以支付为例，在不考虑并发的情况下，实现幂等很简单：①先查询一下订单是否已经支付过，②如果已经支付过，则返回支付成功；如果没有支付，进行支付流程，修改订单状态为‘已支付’。 
+
+#### (5) 防重复提交策略
+
+上述的保证幂等方案是分成两步的，第②步依赖第①步的查询结果，无法保证原子性的。在高并发下就会出现下面的情况：第二次请求在第一次请求第②步订单状态还没有修改为‘已支付状态’的情况下到来。
+
+既然得出了这个结论，余下的问题也就变得简单：把查询和变更状态操作加锁，将并行操作改为串行操作。
+
+**乐观锁**
+如果只是更新已有的数据，没有必要对业务进行加锁，设计表结构时使用乐观锁，一般通过version来做乐观锁，这样既能保证执行效率，又能保证幂等。例如： UPDATE tab1 SET col1=1,version=version+1 WHERE version=#version# 不过，乐观锁存在失效的情况，就是常说的ABA问题，不过如果version版本一直是自增的就不会出现ABA的情况。（从网上找了一张图片很能说明乐观锁，引用过来，出自Mybatis对乐观锁的支持） 
+
+**防重表**
+使用订单号orderNo做为去重表的唯一索引，每次请求都根据订单号向去重表中插入一条数据。第一次请求查询订单支付状态，当然订单没有支付，进行支付操作，无论成功与否，执行完后更新订单状态为成功或失败，删除去重表中的数据。后续的订单因为表中唯一索引而插入失败，则返回操作失败，直到第一次的请求完成（成功或失败）。可以看出防重表作用是加锁的功能。
+
+**分布式锁**
+这里使用的防重表可以使用分布式锁代替，比如Redis。订单发起支付请求，支付系统会去Redis缓存中查询是否存在该订单号的Key，如果不存在，则向Redis增加Key为订单号。查询订单支付已经支付，如果没有则进行支付，支付完成后删除该订单号的Key。通过Redis做到了分布式锁，只有这次订单订单支付请求完成，下次请求才能进来。相比去重表，将放并发做到了缓存中，较为高效。思路相同，同一时间只能完成一次支付请求。 
+
+**token令牌**
+这种方式分成两个阶段：申请token阶段和支付阶段。 第一阶段，在进入到提交订单页面之前，需要订单系统根据用户信息向支付系统发起一次申请token的请求，支付系统将token保存到Redis缓存中，为第二阶段支付使用。 第二阶段，订单系统拿着申请到的token发起支付请求，支付系统会检查Redis中是否存在该token，如果存在，表示第一次发起支付请求，删除缓存中token后开始支付逻辑处理；如果缓存中不存在，表示非法请求。 实际上这里的token是一个信物，支付系统根据token确认，你是你妈的孩子。不足是需要系统间交互两次，流程较上述方法复杂。 
+
+**支付缓冲区**
+把订单的支付请求都快速地接下来，一个快速接单的缓冲管道。后续使用异步任务处理管道中的数据，过滤掉重复的待支付订单。优点是同步转异步，高吞吐。不足是不能及时地返回支付结果，需要后续监听支付结果的异步返回。
+
+#### (6) 消费端如何避免重复消费?
+
++ 唯一ID+指纹码机制, 利用数据库主键去重
+
++ 利用Redis原子性实现
+
+    利用Redis实现幂等, 需要考虑这些问题:
+
+    1. 如果消息需要入库, 数据库和缓存之间如何做到原子性? (可能存在缓存中有但是未成功写入数据库)
+    2. 如果不进行入库, 那么保存在缓存中, 如何设置定时同步策略?
+
+### 3. Confirm确认消息机制
+
+![](images/confirm机制.png)
+
+当生产者发送了消息给Broker后, Broker会发送一个confirm消息给生产者, 此时生产者会监听这个消息, 如果收到表示成功投递.
+
+Confirm确认消息机制, 需要通过代码手动开启. 详情见代码示例.
+
+### 4. Return机制
+
+![](images/Return机制.png)
+
+当生产者产生的消息, 在发送给Broker时无法匹配到对应的队列, 那么就会给生产者发送一个Return消息.
+
+Return机制默认时关闭的, 需要手动开启. 它取决于一个重要的配置: Mandatory, 默认为false. 
+
+在未开启的情况下, Broker收到无法匹配的消息会直接删除.
+
+### 5. 自定义消费者
+
+在实际开发中, 我们会自定义一个消费者并`extends DefaultConsumer`, 通过其`handleDelivery()`方法处理消息.
+
+```java
+//自定义MyConsumer
+public class MyConsumer extends DefaultConsumer {
+
+
+	public MyConsumer(Channel channel) {
+		super(channel);
+	}
+
+	@Override
+	public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+		System.err.println("-----------consume message----------");
+		System.err.println("consumerTag: " + consumerTag);
+		System.err.println("envelope: " + envelope);
+		System.err.println("properties: " + properties);
+		System.err.println("body: " + new String(body));
+	}
+
+
+}
+
+//在Consumer类中, 通过下面的代码监听消息
+channel.basicConsume(queueName, true, new MyConsumer(channel));
+```
+
+### 6. 消费端ACK、NACK、TTL
+
+消费端收到消息后可以通过ACK(手动或自动)对Broker做出应答, 当然也可以对消息进行NACK使其重返队列.
+
+TTL是Time To Live的缩写, 也就是生存时间. 指定了TTL的值后, 队列中的消息会在指定时间(毫秒)后被删除.
+
+TTL是队列的属性, 针对队列中每一条消息有效的, 而消息的expiration属性是针对单个消息的. 
+
+### 7. 消费端限流
+
+假如Broker中存储了成千上万条消息, 这个时候随便开启一个消费者客户端, 巨量的消息全部推送过来, 这个时候单个客户端无法同时处理这么多的消息, 所以会造成崩溃. 所以我们需要进行消费端限流.
+
+RabbitMQ提供了一种qos(服务质量保证)功能, 即在非自动确认消息的前提下, 如果一定数量的消息未被确认, 那么不在消费新的消息.
+
+```java
+//设置消费者的最大处理数
+//第一个参数表示消息的大小限制, 0表示不限制
+//第二个参数表示同时处理的最大消息数
+//第三个参数表示限制范围是否是global. 如果是true则表示所有使用该channel的客户端都进行限制, false表示对单个消费者客户端进行限制
+channel.basicQos(0, 1, false);
+
+//如果要进行限制, 需要先将自动应答autoask设置为false
+channel.basicConsume(queueName, false, new MyConsumer(channel));
+
+//在处理消息时, 需要手动应答
+channel.basicAck(envelope.getDeliveryTag(), false);
+```
+
+### 8. DLX死信队列
+
+DLX, Dead-Letter-Exchange
+
+利用DLX, 当消息在一个队列中变成死信(dead message)之后, 它能被重新publish到另一个Exchange, 这个Exchange就是DLX.
+
+==死信队列本质就是一个普通的Exchange.==
+
+**消息进入死信队列的情况:**
+
+1. 消息被NACK且requeue被设置为false
+2. 消息TTL过期
+3. 队列达到最大长度
+
+如果想要队列中的死信消息进入死信队列, 则需要设置队列的参数
+
+```java
+Map<String, Object> agruments = new HashMap<String, Object>();
+//dlx.exchange为死信队列的名字
+agruments.put("x-dead-letter-exchange", "dlx.exchange");
+//这个agruments属性，要设置到声明队列上
+channel.queueDeclare(queueName, true, false, false, agruments);
+channel.queueBind(queueName, exchangeName, routingKey);
+
+//创建一个死信队列
+channel.exchangeDeclare("dlx.exchange", "topic", true, false, null);
+channel.queueDeclare("dlx.queue", true, false, false, null);
+channel.queueBind("dlx.queue", "dlx.exchange", "#");
+```
+

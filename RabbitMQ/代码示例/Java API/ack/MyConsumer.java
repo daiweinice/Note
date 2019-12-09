@@ -27,6 +27,7 @@ public class MyConsumer extends DefaultConsumer {
 			e.printStackTrace();
 		}
 		if((Integer)properties.getHeaders().get("num") == 0) {
+			//消息的NACK, 第二个参数为是否批量, 第三个参数为是否requeue(重回队列)
 			channel.basicNack(envelope.getDeliveryTag(), false, true);
 		} else {
 			channel.basicAck(envelope.getDeliveryTag(), false);
