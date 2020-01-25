@@ -8,7 +8,7 @@
 
 消息中间件利用高效可靠的消息传递机制进行==平台无关==的数据交流，并基于数据通信来进行分布式系统的集成。通过提供消息传递和消息排队模型，它可以在分布式环境下扩展进程间的通信。对于消息中间件，常见的角色大致也就有Producer（生产者）、Consumer（消费者）
 
-### 3. 消息中间键常见应用场景
+### 3. 消息中间件常见应用场景
 
 #### (1) 异步处理
 
@@ -50,17 +50,17 @@ RabbitMQ高性能的原因是因为它是用Erlang语言编写的.
 
 Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket一样的延迟.
 
-### 4. 高级消息队列协议(AMPQ)
+### 4. 高级消息队列协议(AMQP)
 
 #### (1) 概念
 
 > AMPQ是具有现代特征的二进制协议. 是一个提供统一消息服务的应用层标准高级消息队列协议, 是应用层协议的一个开放标准, 为面向消息的中间件设计.
 
-#### (2) AMPQ模型
+#### (2) AMQP模型
 
 ![](images/AMPQ模型.png)
 
-#### (3) AMPQ核心概念
+#### (3) AMQP核心概念
 
 + **Server:** 又称Broker, 接收客户端的连接, 实现AMPQ实体服务
 + **Connection:** 连接, 应用程序与Broker的网络连接
@@ -478,3 +478,64 @@ channel.queueDeclare("dlx.queue", true, false, false, null);
 channel.queueBind("dlx.queue", "dlx.exchange", "#");
 ```
 
+
+
+## 六、RabbitMQ+Spring
+
+### 1. 核心组件
+
++ **ConnectionFactory:**
+
+    封装了与RabbitMQ服务器的相关连接信息
+
++ **RabbitMQAdmin:**
+
+    用于操作RabbitMQ的Exchange、Queue、Binding、RoutingKey
+
+    底层实现是通过Spring容器获取Exchange、Bingding、RoutingKey、Queue的@Bean声明。然后调用RabbitTemplate的execute方法执行对应的操作。
+
++ **SpringAMQP声明:**
+
++ **RabbitTemplate:**
+
+    用于发送消息的关键类
+
+    该类提供了丰富的发送消息方法, 包括可靠性投递消息方法、回调监听消息接口ConfirmCallback、返回值确认接口ReturnCallback等。将该类对象注入容器即可直接使用。
+
+    在与spring整合时需要实例化, 在与spring boot整合时在配置文件中添加配置即可。
+
++ **SimpleMessageListenerContainer:**
+
+    简单消息监听容器, 用于消费端的相关设置。注入容器后即可使用。
+
+    设置事务特性、事务管理器、事务属性、事务容量(并发)、是否开启事务、回滚消息
+
+    设置消费者数量、最小最大数量、批量消费
+
+    设置消息确认和自动确认模式、是否重回队列、异常捕获、handler函数
+
+    设置消费者标签生成策略、是否独占模式、消费属性等
+
+    设置具体监听器、消息转换器
+
+    SimpleMessageListenerContainer支持在应用运行时动态改变设置。
+
++ **MessageListenerAdapter:**
+
+    消息监听适配器。通过自己定义一个消息监听适配器, 完成对消息的监听和处理。
+
+    通过SimpleMessageListenerContainer的setMessageListener()方法进行设置。
+
++ **MessageConverter:**
+
+    消息转化器, 解决消息监听适配器自定义消息处理方法的参数类型问题。
+
+    通过`adapter.setMessageConverter(new TextMessageConverter());`设置。
+
+
+
+## 七、RabbitMQ+Spring Boot
+
+RabbitMQ与Spring Boot整合后, 主要配置都是通过`applcation.properties`来完成的
+
+`RabbitTemplate`都是已经注入了容器, 直接@Autowired即可
