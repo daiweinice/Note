@@ -209,3 +209,96 @@ public String login(String username, String Password){
 }
 ```
 
+### 3. Shiro标签
+
+Shiro标签适用于jsp页面, 使用时需要导入标签库。
+
+```jsp
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags">
+```
+
+#### (1) 身份认证标签
+
+```html
+<shiro:authenticated> 已登录状态时显示标签体中的内容
+<shiro:user> 已登录或记住我
+<shiro:guest> 未登录且未记住我
+<shiro:notAuthenticated> 未登录
+<shiro:principal> 获取用户名(该标签就表示用户名)    
+```
+
+#### (2) 角色校验标签
+
+```html
+<shiro:hasAnyRoles name="admin,manager"> 有其中任意一种角色
+<shiro:hasRole name="admin"> 指定角色(只能为单个角色)
+<shiro:lacksRole name="admin"> 没有指定角色
+```
+
+#### (3) 权限校验标签
+
+```html
+<shiro:hasPermission name="user:delete"> 有指定权限
+<shiro:lacksPermission name="user:delete"> 没有指定权限
+```
+
+### 4. 自定义Realm
+
+在入门案例中使用的是ini配置文件的方式保存用户名和密码, 但是在实际项目中, 用户信息、项目角色和权限都是放在数据库中的。入门案例中Shiro会读取配置文件并创建IniRealm封装用户信息, 使用了数据库后需要自定Realm。
+
+#### (1) 数据库建表
+
+涉及5个表, 用户表、角色表、权限表、用户角色表、角色权限表
+
+#### (2) 自定义Realm
+
+```java
+public class MyRealm extends AuthorizingRealm{
+    /*
+     * 作用: 查询权限信息, 只需要查询数据库权限信息并将其封装到AuthorizationInfo即可, 验证工作后续自动完成
+     * 何时触发: 涉及角色和权限验证时
+    */
+    @override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principala){
+        String username = (String)principals.getPrimaryPrincippal();
+        Set<String> roles = RoleDao.searchRoles(username);
+        Set<String> permissions = PermissionDao.searchPermissions(username);
+       	SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo(roles);
+        simpleAuthorizationInfo.setStringPermissions(permissions);
+        
+        return simpleAuthorizationInfo;
+    }
+    
+    /*
+     * 作用: 查询用户身份信息, 只用查询信息并封装即可, 验证工作后续自动完成
+     * 何时触发: subject.login()时触发
+    */
+    @override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException{
+        String username = (String)token.getPrincipal();
+        User user = UserDao.searchUaser(String username);
+        
+        if(user == null){
+        	return null;
+        }
+         
+        return new SimpleAuthenticationInfo(user.getUsername(), //数据库中的用户名
+                                            user.getPassword(), //数据库中的密码
+                                            this.getName);      //realm的标识
+    }
+    
+    
+}
+```
+
+#### (3) 配置Realm
+
+修改`shiro.ini`相关配置
+
+```ini
+[main]
+realm1 = com.dw.MyRealm
+realm2 = com.dw.MyRealm2
+securityManager.realms=$realm1,$realm2
+```
+
