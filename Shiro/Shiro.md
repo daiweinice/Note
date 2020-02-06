@@ -302,3 +302,306 @@ realm2 = com.dw.MyRealm2
 securityManager.realms=$realm1,$realm2
 ```
 
+### 5. 记住我
+
+在用户登录后, 可以将用户名存在cookie中, 下次访问时, 可以先不登陆, 就可以识别用户身份。
+
+在确实需要身份认证时, 再要求用户登录, 这样可以提高用户体验。
+
+由于可以保持用户信息, 系统后台也可以更好的监控、记录用户行为, 积累数据。
+
+#### (1) 实现代码
+
+```java
+token.setRememberMe(true);
+subjet.login(token);
+```
+
+默认cookie的名字为rememberMe保存时间为365天。
+
+#### (2) 自定义cookie
+
+```xml
+<bean id="remembberCookie" class="org.apach.shiro.web.servlet.SimpleCookie">
+    <!--cookie名字-->
+    <property name="name" value="cookie1"/>
+    <!--只在http请求使用, 方式通过js脚本窃取cookie-->
+    <property name="httpOnly" value="true"/>
+    <!--保存时间, 单位: 秒-->
+    <property name="maxAge" class="30000"/>
+</bean>
+
+<!--将cookie注入CookieRememberMeManager-->
+<bean id="rememberMeManager" class="xxx.CookieRememberMeManager">
+    <property name="cookie" ref="rememberCookie"/>
+</bean>
+    
+<!--将CookieRememberMeManager注入SecurityManager-->
+<bean name="securityManager" class="xxx.DefaultWrbSecurityManager">
+	<property name="realm" ref="myRealm"/>
+    <property name="rememberMeManager" ref="rememberMeManager"/>
+</bean>
+```
+
+### 6. Session管理
+
+shiro提供了一整套session管理方案, 如果不需要自己设定相关参数是不需要自行配置的, 可以直接像以前一样使用session。
+
+#### (1) session参数设置
+
+```xml
+<bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+    <property name="name" value="SESSIONID"/>
+    <property name="httpOnly" value="true"/>
+    <!-- -1表示会话结束就删除 -->
+    <property name="maxAge" value="-1"/>
+</bean>
+
+<bean id="sessionManager" class="xxx.DefaultWebSessionManager">
+	<!--设置session对应的cookie, 如果没有自定义cookie, 可以省略, 使用默认配置-->
+    <property name="sessionIdCookie" ref="sessionIdCookie" />
+    <!--session存在时间, 单位: 毫秒 默认为30分钟-->
+    <property name="globalSessionTimeout" value="1800000"/>
+</bean>
+
+<!--将sessionManager注册到SecurityManager-->
+<bean id="securityManager" class="xxx.DefaultWrbSecurityManager">
+	 <property name="sessionManager" ref="sessionManager"/>
+</bean>
+```
+
+#### (2) session监听
+
+session有三个核心过程: 创建、过期、停止(用户主动登出或session.stop)
+
+```java
+//创建session监听器
+public class MySessionListener extends SessionListenerAdapter{
+    @override
+    public void onStart(Session session){
+        session创建时的操作...
+    }
+    
+    @override
+    public void onStop(Session session){
+        session停止时的操作...
+    }
+    
+    //过期操作不是session过期马上执行, 而是过期后下次访问时检测到过期再执行
+    @override
+    public void onExpiration(Session session){
+        session过期的操作...
+    }
+}
+```
+
+```xml
+<!--添加监听器-->
+<bean id="sessionManager" class="xxx.DefaultWebSessionManager">
+	<!--设置session对应的cookie, 如果没有自定义cookie, 可以省略, 使用默认配置-->
+    <property name="sessionIdCookie" ref="sessionIdCookie" />
+    <!--session存在时间, 单位: 毫秒 默认为30分钟-->
+    <property name="globalSessionTimeout" value="1800000"/>
+    
+    <property name="sessionListeners">
+        <list>
+        	<bean class="com.dw.MySessionListener" />    
+        </list>
+    </property>
+</bean>
+```
+
+#### (3) session检测
+
+用户没有主动退出, 只是关闭浏览器, 则session是否过期无法获知, 也就不能停止session。为此shiro提供了session的检测机制, 可以i定时发起检测, 识别session过期并停止session。
+
+```xml
+<bean id="sessionManager" class="xxx.DefaultWebSessionManager">
+	<!--设置session对应的cookie, 如果没有自定义cookie, 可以省略, 使用默认配置-->
+    <property name="sessionIdCookie" ref="sessionIdCookie" />
+    <!--session存在时间, 单位: 毫秒 默认为30分钟-->
+    <property name="globalSessionTimeout" value="1800000"/>
+    
+    <property name="sessionListeners">
+        <list>
+        	<bean class="com.dw.MySessionListener" />    
+        </list>
+    </property>
+    
+    <!--是否开启检测器, 默认就是开启的, 可以不用配置-->
+    <property name="sessionValidationSchedulerEnable" value="true"/>
+    <!--检测间隔, 单位: 毫秒 默认一个小时-->
+    <property name="sessionValidationInterval" value="1000"/>    
+</bean>
+```
+
+
+
+## 四、Shiro加密
+
+在实际项目中, 用户的密码是加密后存入数据库的, 加密后的密文是不可倒推的。只有当用户输入的密码加密形成的密文与数据库的密文相同时才能正常登录。
+
+Shiro支持Hash(散列)加密, 常见的有md5、sha等。
+
+由于不同密码可能对应同一个密文, 通过碰撞算法可以完成破解, 所以可以通过多次重复加密等手段提高密码破解难度。
+
+### 1. 加密过程
+
++ 基本加密
+
++ 加盐加密过程
+
+    系统随机生成一个salt="xxxx", 加密(明文+salt)
+
++ 加盐多次迭代加密过程
+
+    如设迭代次数为2, 则① 加密(明文+salt)-->密文1 ② 加密(密文1+salt)-->最终密文
+
+    一般建议迭代次数1000+
+
+**注意:** 加了salt后, 由于salt是随机生成的(一般是uuid), 所以为了后续能验证用户的密码, 需要在其注册时将其加密用到的salt存储在数据库。
+
+### 2. 加密代码
+
+```java
+String password = "abc"; //密码明文
+String salt = UUID.randomUUID().toString(); //设置盐
+Integer iter = 1000;
+
+String pwd = new Md5Hash(password, salt, iter).toString(); //md5加密
+String pwd = new Md5Hash(password, salt, iter).toBase64(); //加密后转base64
+
+//除Md5Hash外其他加密方法
+new Sha256Hash(password, salt, iter).toString;
+new Sha512Hash(password, salt, iter).toString;
+```
+
+### 3. 密码比对
+
+对用户密码加密后, 需要配置密码比对支持用户验证功能。
+
+```ini
+[main]
+#声明密码比对器
+credentialsMatcher=org.apach.shiro.authc.credential.HashedCredentialsMatcher
+#声明加密算法
+credentialsMatcher.hashAlgorithmName=sha-256
+#声明迭代次数
+credentialsMatcher.hashIterations=10000
+#true=hex个数 false=base64格式
+credentialsMathcher.storedCredentialsHexEncoded=false
+
+#将密码比对器注册在realm中
+realm.credentialsMatcher=$credentialsMatcher
+```
+
+在自定义Realm中告知密码比对器对应用户的salt
+
+```java
+ return new SimpleAuthenticationInfo(user.getUsername(), //数据库中的用户名
+                                            user.getPassword(), //数据库中的密码
+                                            ByteSource.Util.bytes(user.getSalt()),
+                                     		this.getName);      //realm的标识
+```
+
+
+
+## 五、Shiro集成Spring
+
+在不与spring集成的情况下, 由于MyRealm没有添加到工厂, 里面的UserService等Bean也无法通过依赖注入来使用, 所以需要与spring集成。同时与spring集成, 可以将组件交由spring统一管理, 方便更好的与其他组件协作。
+
+### 1. pom.xml
+
+导入`shiro-spring.jar`
+
+导入该jar包后, `shiro-core.jar`和`shiro-web`就不需要单独导入了
+
+### 2. applicationContext.xml
+
+将`SecurityManager`、`Realm`、`ShiroFilter`加入工厂
+
+```xml
+<!--Realm-->
+<bean id="myRealm" class="xxx.myRealm">
+	<property name="UserService" ref="UserServiceImpl"/>
+    <property name="RoleService" ref="RoleServiceImpl"/>
+    <property name="PermissionService" ref="PermissionServiceImpl"/>
+    <!--密码比对器-->
+    <property>
+    	<bean class="xxx.HashedCredentialsMatcher">
+        	<property name="hashAlgorithmName" value="SHA-256"/>
+            <property name="storedCredentialsHexEncoded" value="false"/>
+            <property name="hashIterations" value="1000"/>
+        </bean>
+    </property>
+</bean>
+
+<!--SecurityManager-->
+<bean name="securityManager" class="xxx.DefaultWrbSecurityManager">
+	<property name="realm" ref="myRealm"/>
+</bean>
+    
+<!--ShiroFilter-->
+<bean id="shiroFilter" class="xxx.ShiroFilterFactoryBean">
+	<property name="securityManager" ref="securityManager"/>
+    <property name="loginUrl" value="/user/login"/>
+    <property name="unauthorizedUrl" value="/error.jsp"/>
+    <property name="filterChainDefinitions">
+    	<value>
+            /user/query=anon
+            /user/insert=authc,roles["namfu"]
+        </value>
+    </property>
+</bean>
+```
+
+### 3. web.xml
+
+```xml
+<!--替换原来shiroFilter的配置-->
+<!--DelegatingFilterProxy会拦截对应请求(/*), 交给id与其filter-name相同(shiroFilter)的bean处理-->
+<!--所以DelegatingFilterProxy只是起到一个导航作用-->
+<filter>
+	<filter-name>shiroFilter</filter-name>
+    <filter-class>org.springframwork.web.filter.DelegatingFilterProxy</filter-class>
+    <init-param>
+    	<param-name>targetFilterLifecycle</param-name>
+        <param-value>true</param-value>
+    </init-param>
+</filter>
+<filter-mapping>
+    <filter-name>shiroFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+
+
+## 六、Shiro注解开发
+
+1. 添加`spring-aspect.jar`
+2. 配置`mvc.xml`
+
+3. 使用注解
+
+    注解可以用在方法上也可以用在类上。
+
+    用在方法上表示对应请求的验证要求
+
+    用在类上表示该类中所有映射请求的验证要求
+
+```java
+//需要登录认证
+@RequiresAuthentication
+//登录或记住我
+@RequiresUser
+//游客身份
+@RequiresGuest
+
+//需要指定角色, 多个角色之间用OR关系
+@RequiresRoles(value={"admin", "manager"}, logical = Logical.OR)
+
+//需要指定权限, 默认逻辑是且
+@RequiresPermissions({"user;insertt", "user:delete"})
+```
+
