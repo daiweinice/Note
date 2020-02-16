@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>文本填充</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <!-- 填充纯文本 -->
+        <p v-text="msg"></p>
+        <!-- 填充HTML片段 -->
+        <p v-html="msg1"></p>
+        <!-- 显示原始信息 -->
+        <p v-pre>{{msg}}</p>
+        <!-- 只解析一次, 后续没有响应功能 -->
+        <p v-once>{{msg}}</p>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: 'Hello Vue!',
+                msg1: '<h3>Hello Vue!</h3>'
+            }
+        })
+    </script>
+</body>

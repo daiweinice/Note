@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>v-cloak</title>
+    <script src="js/vue.js"></script>
+    <style>
+        [v-cloak]{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <p v-cloak>{{msg}}</p>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: 'Hello Vue!'
+            }
+        })
+    </script>
+</body>

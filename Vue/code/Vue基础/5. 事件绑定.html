@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>事件绑定</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <p>{{num}}</p>
+        <!-- v-on指令绑定click事件 -->
+        <button v-on:click="num++">按钮1</button>
+        <!-- 事件绑定缩写 -->
+        <button @click="num++">按钮2</button>
+        <!-- 触发事件调用对应函数, 只写函数名且无需使用event对象 -->
+        <button @click="addNum">按钮3</button>
+        <!-- 触发事件调用对应函数, 只写函数名但函数定义时需要用形参event接收event对象 -->
+        <button @click="addNum1">按钮4</button>
+        <!-- 触发事件调用对应函数, 函数需要传递参数, 如果还需要使用event对象, 那么最后一个参数用$event传递 -->
+        <button @click="addNum2(111,222,$event)">按钮5</button>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                num: 0
+            },
+            methods: {
+                addNum: function(){
+                    this.num++;
+                },
+                addNum1: function(event){
+                    this.num++;
+                    console.log(event.target.innerHTML);
+                },
+                addNum2: function(data1, data2, event){
+                    this.num++;
+                    console.log(data1 + ' '+ data2);
+                    console.log(event.target.innerHTML);
+                }
+            }
+        })
+    </script>
+</body>

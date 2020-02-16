@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>双向数据绑定</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <input type="text" v-model="userName">
+        <p>{{userName}}</p>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                userName: ''
+            }
+        })
+    </script>
+</body>

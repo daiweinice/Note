@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>事件修饰符</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content" @click="num++">
+        <p>{{num}}</p>
+        <!-- 冒泡是指当button触发click事件时, 会同时传递给其父元素, 如果父元素也绑定了click事件, 也会执行相应方法 -->
+        <button @click="num++">按钮(冒泡)</button>
+        <!-- 通过.stop修饰符阻止冒泡 -->
+        <button @click.stop="num++">按钮(不冒泡)</button>
+        <!-- 通过.prevent修饰符阻止事件默认行为, 如链接跳转 -->
+        <a href="www.baidu.com" @click.prevent>阻止默认行为</a>
+        <!-- 阻止表单默认提交 -->
+        <form @submit.prevent>
+            <!-- .keyCode | keyAlias指定特定键位触发, 这里为按enter键时触发 -->
+            <input type="text" @keyup.enter="submit" placeholder="输入信息后按回车提交">
+            <!-- 自定义按键修饰符 -->
+            <input type="text" @keyup.a="submit" placeholder="输入信息后按a提交">
+            <!-- 修饰符之间可以串联, 下面的修饰符表示按下ctrl+a时触发 -->
+            <!-- 系统修饰符与常规按键修饰符不同, 系统修饰符需要搭配常规按键修饰符使用, 只有按住系统按键不放再按一下其他按键才能触发事件 -->
+            <input type="text" @keyup.ctrl.a="submit" placeholder="输入信息按ctrl+a提交">
+        </form>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                num: 0
+            },
+            methods: {
+                submit: function(event){
+                    //获得按键的keyCode
+                    console.log(event.keyCode);
+                    //提交表单
+                }
+            }
+        });
+        //由于按键修饰符只设置了几个常用的, 其他按键的修饰符要么直接使用keyCode, 要么通过下面的方法自定义
+        Vue.config.keyCodes.a = 65;
+    </script>
+</body>
+
+<!-- 
+    所有事件修饰符:
+    .stop - 调用 event.stopPropagation(), 禁用冒泡。
+    .prevent - 调用 event.preventDefault(), 阻止默认行为。
+    .capture - 添加事件侦听器时使用 capture 模式。
+    .self - 只当事件是从侦听器绑定的元素本身触发时才触发回调。
+    .{keyCode | keyAlias} - 只当事件是从特定键触发时才触发回调。
+    .native - 监听组件根元素的原生事件。
+    .once - 只触发一次回调。
+    .left - (2.2.0) 只当点击鼠标左键时触发。
+    .right - (2.2.0) 只当点击鼠标右键时触发。
+    .middle - (2.2.0) 只当点击鼠标中键时触发。
+    .passive - (2.3.0) 以 { passive: true } 模式添加侦听器
+ -->
+
+ <!-- 
+     常用按键修饰符:
+    .enter
+    .tab
+    .delete (捕获"删除"和"退格"键)
+    .esc
+    .space
+    .up
+    .down
+    .left
+    .right
+  -->
+
+  <!-- 
+    新增系统修饰符
+    .ctrl
+    .alt
+    .shift
+    .meta
+   -->
