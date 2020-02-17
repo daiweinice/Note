@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>循环结构</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <!-- 遍历数组 -->
+        <ul>
+            <li v-for="fruit in fruits">{{fruit}}</li>
+            <br>
+            <!-- 遍历时带上索引 -->
+            <li v-for="(fruit, index) in fruits">{{index}}-{{fruit}}</li>
+            <br>
+            <!-- key的值必须唯一, 设置该属性的作用是帮助Vue区分不同元素, 提高性能 -->
+            <li :key="index" v-for="(fruit, index) in fruits">{{index}}-{{fruit}}</li>
+            <br>
+            <!-- v-for与v-if结合使用 -->
+            <li v-for="fruit in fruits" v-if="fruit=='apple'">{{fruit}}</li>
+        </ul>
+
+        <!-- 遍历对象的每一个属性 -->
+        <ul>
+            <li v-for="(value, key, index) in person">{{key+': '+value}}</li>
+        </ul>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                fruits: ['apple', 'orange', 'banana'],
+                person: {
+                    name: '代伟',
+                    age: 21
+                }
+            }
+        })
+    </script>
+</body>

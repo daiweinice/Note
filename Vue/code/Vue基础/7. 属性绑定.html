@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>属性绑定</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <!-- 动态绑定属性 -->
+        <a v-bind:href="url">一个动态URL链接</a>
+        <!-- 缩写形式 -->
+        <a :href="url">一个动态URL链接</a>
+        <br>
+        <!-- 利用属性绑定自定义实现v-model功能 -->
+        <input type="text" :value="msg" @input="msg=$event.target.value">
+        <p>{{msg}}</p>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                url: 'http://www.baidu.com',
+                msg: ''
+            }
+        })
+    </script>
+</body>

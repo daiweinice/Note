@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>分支结构</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <!-- 按照成绩划分等级 -->
+        <!-- 页面只渲染符合条件的那个<p> -->
+        <p v-if="score>=90">优秀</p>
+        <p v-else-if="score>=80">良好</p>
+        <p v-else-if="score>=60">一般</p>
+        <p v-else>不及格</p>
+
+        <!-- v-show满足指定条件时显示 -->
+        <!-- 无论条件是否满足, 都会渲染该标签到页面, 如果满足条件则显示出来反之不显示 -->
+        <p v-show="score==100">您的成绩是{{score}}分</p>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                score: 100
+            }
+        })
+    </script>
+</body>
