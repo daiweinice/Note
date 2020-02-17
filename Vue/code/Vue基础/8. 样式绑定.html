@@ -33,6 +33,10 @@
         <h1 :style="[colorObj, fontSizeObj]">Status(数组语法)</h1>
         <!-- 简略写法 -->
         <h1 :style="colorAndSizeObj">Status(简略写法)</h1>
+
+        <hr>
+        <!-- 当isGreen和isBigger都为true时, 类名为"green bigger", 反之则无类名 -->
+        <h1 :class="isGreen&&isBigger?'green bigger':''">Status(灵活运用)</h1>
     </div>
 
     <script>
