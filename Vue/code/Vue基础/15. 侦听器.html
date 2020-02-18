@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>侦听器</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <span>firstName: </span>
+        <input type="text" v-model="firstName">
+        <br>
+        <span>lastName: </span>
+        <input type="text" v-model="lastName">
+        <br>
+        <h4>{{fullName}}</h4>
+
+        <hr>
+
+        <!-- 利用侦听器判断用户输入的名字是否可用 -->
+        <span>用户名: </span>
+        <input type="text" v-model.lazy="userName">
+        <span :style="css">{{tip}}</span>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                firstName: '',
+                lastName: '',
+                fullName: '',
+                userName: '',
+                tip: '',
+                css: {
+                    color: 'green',
+                    fontWeight: 'bold'
+                }
+            },
+            //侦听器, 数据一旦发生变化就执行侦听器绑定的方法。适用于异步或开销较大的操作
+            watch: {
+                //名字必须与所侦听的数据的名字一致
+                firstName: function(val){
+                    this.fullName = val + ' ' + this.lastName;
+                },
+                lastName: function(val){
+                    this.fullName = this.firstName + ' ' + val;
+                },
+                userName: function(val){
+                    if(val=='admin'){
+                        this.tip = '用户名已存在';
+                        this.css.color = 'red';
+                    }else{
+                        this.tip = '用户名可用';
+                        this.css.color = 'green';
+                    }
+                }
+            }
+        })
+    </script>
+</body>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>计算属性</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <h4>{{msg}}</h4>
+        <h4>{{msg.split('').reverse().join('')}}</h4>
+        <h4>{{reverseString}}</h4>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: 'Hello Vue!'
+            },
+            //计算属性, 可以使模板更加简洁
+            computed: {
+                reverseString: function(){
+                    return this.msg.split('').reverse().join('');
+                }
+            }
+        })
+    </script>
+</body>
+
+<!-- 
+    计算属性与方法的区别:
+    + 计算属性的返回值会基于依赖的data数据进行缓存
+      如果依赖的data数据没有发生改变, 那么在第一次调用方法获取到返回值后, 后面都会从缓存中获取值而不是重新执行方法
+    + 方法没有缓存机制, 每次都会重新执行
+ -->

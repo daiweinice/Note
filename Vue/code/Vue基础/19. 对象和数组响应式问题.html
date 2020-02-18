@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>对象和数组响应式问题</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <ul>
+            <li>{{person.name}}</li>
+            <li>{{person.age}}</li>
+            <li>{{person.gender}}</li>
+            
+            <hr>
+
+            <li v-for="fruit in fruits">{{fruit}}</li>
+        </ul>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                person: {
+                    name: 'David',
+                    age: '21'
+                },
+                fruits: ['apple', 'orange', 'banana']
+            }
+        })
+
+        //由于JavaScript的限制, Vue不能检测对象属性的添加或删除, 因此直接设置新的属性值, 无法动态更新到页面上
+        //vm.person.gender='male';
+        //可以通过全局API实现响应式, 第一个参数为操作对象, 第二个参数为新增属性名, 第三个参数为新增属性的值
+        Vue.set(vm.person, 'gender', 'male');
+        //vm.$set(vm.person, 'gender', 'male');
+
+        //同时直接通过索引的方式为数组修改值也无法实现响应式
+        //vm.fruits[0] = 'lemon';
+        //应该通过全局API实现
+        Vue.set(vm.fruits, 0, 'lemon');
+        //vm.$set(vm.fruits, 0, 'lemon')
+    </script>
+</body>

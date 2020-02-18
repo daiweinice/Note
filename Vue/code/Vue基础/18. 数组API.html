@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>数组API</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <input type="text" v-model="fruit">
+        <button @click="add">添加</button>
+        <button @click="del">删除</button>
+        <button @click="slice">截取</button>
+        <ul>
+            <li v-for="item in fruits">{{item}}</li>
+        </ul>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                fruit: '',
+                fruits: ['apple', 'orange', 'banana']
+            },
+            methods: {
+                //变异方法(方法会直接对数组数据进行修改)
+                add: function(){
+                    this.fruits.push(this.fruit);
+                },
+                del: function(){
+                    this.fruits.pop();
+                },
+                //替换数组(方法会生成新的数组)
+                slice: function(){
+                    this.fruits = this.fruits.slice(0, 3);
+                },
+                //filter()方法介绍
+                filter: function(id){
+                    //数组array有多个user对象, 根据id从数组中找到对应id的user对象
+                    //filter方法的参数为一个回调函数
+                    //回调函数的参数代表遍历的每一个user对象
+                    //返回值为true时则表明找到匹配的对象
+                    var user = this.array.filter(function(item){
+                        return item.id == id;
+                    });
+                    //过滤掉对应id的user对象, 并返回过滤后的数组
+                    this.array = this.array.filter(function(item){
+                        return item.id == id;
+                    });
+                }
+
+            }
+        })
+    </script>
+</body>
+
+<!-- 
+    1. 变异方法
+       push()
+       pop()
+       shift()
+       unshift()
+       splice()
+       sort()
+       reverse()
+    
+    2. 替换数组
+       filter()
+       concat()
+       slice()
+ -->

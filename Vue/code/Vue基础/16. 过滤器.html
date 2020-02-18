@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>过滤器</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <input type="text" v-model="msg">
+        <!-- 过滤器, 将首字母变大写后再显示 -->
+        <h4>{{msg | firstUpper}}</h4>
+        <!-- 级联写法, 第一个过滤器的输出作为第二个过滤器的输入 -->
+        <h4>{{msg | firstUpper | firstLower}}</h4>
+        <!-- 局部过滤器 -->
+        <h4>{{msg | allUpper}}</h4>
+        <!-- 过滤器可以用在插值表达式, 还可以用在绑定属性上 -->
+        <h4 :id="'test' | firstUpper">绑定属性+过滤器</h4>
+        <!-- 带参过滤器, 从第二个参数开始传值 -->
+        <h4>{{msg | withArg('Arg')}}</h4>
+    </div>
+
+    <script>
+        //创建一个过滤器
+        Vue.filter('firstUpper', function(val){
+            return val.charAt(0).toUpperCase() + val.slice(1);
+        });
+
+        Vue.filter('firstLower', function(val){
+            return val.charAt(0).toLowerCase() + val.slice(1);
+        });
+
+        //带参过滤器, 第一个参数为固定参数, 后面的为自己添加的参数
+        Vue.filter('withArg', function(val, arg){
+            return val + '--' + arg; 
+        })
+
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: ''
+            },
+            //局部过滤器, 只能在本组件中使用
+            filters: {
+                allUpper: function(val){
+                    return val.toUpperCase();
+                }
+            }
+        })
+    </script>
+</body>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hello Vue</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <h4>{{msg}}</h4>
+        <button @click="update">更新</button>
+        <button @click="destroy">销毁</button>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: 'Hello Vue!'
+            },
+            methods: {
+                update: function(){
+                    this.msg = 'Hello';
+                },
+                destroy: function(){
+                    this.$destroy();
+                }
+            },
+            //实例初始化之后, 数据观测和事件配置之前被调用
+            beforeCreate: function(){
+                console.log('beforeCreate');
+            },
+            //实例创建完成后调用
+            created: function(){
+                console.log('created');
+            },
+            //挂载开始前调用
+            beforeMount: function(){
+                console.log('beforeMount');
+            },
+            //⭐ 实例被挂载后调用，这时 el 被新创建的 vm.$el 替换
+            //此时模板已经加载成功了, 我们可以在该方法中通过Ajax获取后台数据, 将数据加载到模板中。
+            mounted: function(){
+                console.log('mounted');
+            },
+            //数据更新时调用, 发生在虚拟DOM打补丁之前
+            beforeUpdate: function(){
+                console.log('beforeUpdate');
+            },
+            //虚拟DOM重新渲染和打补丁之后调用
+            updated: function(){
+                console.log('updated');
+            },
+            //销毁前调用
+            beforeDestroy: function(){
+                console.log('beforeDestroy');
+            },
+            //销毁后调用
+            destroyed: function(){
+                console.log('destroyed');
+            }
+        })
+    </script>
+</body>

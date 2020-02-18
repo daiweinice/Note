@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>表单修饰符</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <!-- .number修饰符, 如果输入为数字, 则将number转化为数字类型(这样可以直接用number进行数学计算), 如果是非数字则保持字符串类型 -->
+        <span>.number: </span>
+        <input type="text" v-model.number="number">
+
+        <br>
+        
+        <!-- .trim修饰符, 自动去掉开头和结尾的空格 -->
+        <span>.trim: </span>
+        <input type="text" v-model.trim="trim">
+
+        <br>
+
+        <!-- .lazy修饰符, 把input事件变成exchange事件, 原来输入内容会动态同步更新到页面, 使用该修饰符后, 只有输入框失去焦点时才会更新 -->
+        <span>.lazy: </span>
+        <input type="text" v-model.lazy="lazy">
+        <span>{{lazy}}</span>
+
+        <br>
+
+        <button @click="handle">Test</button>
+    </div>
+
+    <script>
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                number: '',
+                trim: '',
+                lazy: ''
+            },
+            methods: {
+                 handle: function(){
+                     //console.log(this.number+1);
+                     //console.log(this.trim);
+                 }
+            }
+        })
+    </script>
+</body>

@@ -18,7 +18,7 @@
         <!-- 通过对象语法绑定, green为类名, isGreen为一个data, 要么为true要么为false, true表示有green这个类名, false表示没有这个类名 -->
         <h1 :class="{green: isGreen, bigger: isBigger}">Status(对象语法)</h1>
         <!-- 通过数组语法绑定 -->
-        <h1 :class="[greenClass, biggerClass]">Status(数组语法)</h1>
+        <h1 :class="[greenClass, biggerClass, 'str']">Status(数组语法)</h1>
         <!-- 对象语法与数组语法混用 -->
         <h1 :class="[greenClass, {bigger: isBigger}]">Status(对象语法与数组语法混用)</h1>
         <!-- 绑定属性与非绑定属性不冲突 -->
