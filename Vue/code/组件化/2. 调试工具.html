@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>调试工具</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <h2>{{msg}}</h2>
+        <component-1></component-1>
+    </div>
+
+    <script>
+
+        Vue.component('component-2', {
+            data: function(){
+                return {
+                    msg: '二级子组件'
+                }
+            },
+            template: '<h4>{{msg}}</h4>',
+        })
+
+        Vue.component('component-1', {
+            data: function(){
+                return {
+                    msg: '一级子组件'
+                }
+            },
+            //这里用到了ES6新特性模板字符串, 使用(``)来替换(''), 从而实现字符串换行操作, 使得模板更加易读
+            template: `
+                <div>
+                    <h3>{{msg}}</h3>
+                    <component-2></component-2>
+                </div>
+            `,
+        })
+
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: '根组件'
+            }
+        })
+
+    </script>
+</body>

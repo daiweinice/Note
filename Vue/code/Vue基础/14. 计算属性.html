@@ -17,7 +17,7 @@
             data: {
                 msg: 'Hello Vue!'
             },
-            //计算属性, 可以使模板更加简洁
+            //计算属性, 可以使模板更加简洁, 也能实现根据某些数据变化动态改变其他数据的功能
             computed: {
                 reverseString: function(){
                     return this.msg.split('').reverse().join('');

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>组件间数据交互(父传子)</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <!-- 父组件通过属性的方式给子组件传递数据 -->
+        <component-h4 msg="父组件传给子组件的内容" user-name="David"></component-h4>
+        <!-- 动态绑定 -->
+        <component-h4 :msg="msg"></component-h4>
+        <!-- 
+            父组件可以传递的数据类型有: 字符串、数值、布尔值、数组、对象 
+            下面的:msg传递的值是数值类型, 而user-name传递的值是字符串类型的
+        -->
+        <component-h4 :msg="12" user-name="12"></component-h4>
+    </div>
+
+    <script>
+
+        Vue.component('component-h4', {
+            data: function(){
+                return {
+                    
+                }
+            },
+            //子组件通过props属性接收数据
+            //注意: 如果props中数据名为驼峰式(如userName), 父组件应该通过user-name属性传值(因为HTML对大小写不敏感)
+            props: ['msg', 'userName'],
+            template: '<h4>{{msg}}: 驼峰命名用user-name传值给userName-->{{userName}}</h4>',
+        })
+
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: "父组件的内容"
+            }
+        })
+
+    </script>
+</body>

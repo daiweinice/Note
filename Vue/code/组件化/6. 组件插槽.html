@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>组件插槽</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <component></component>
+        <component>Something bad happened</component>
+        <component><em>Something good happened</em></component>
+
+        <hr>
+
+        <!-- 具名插槽, 根据slot属性匹配到对应的slot -->
+        <component1>
+            <p slot="footer">底部内容</p>
+            <p >主要内容</p>
+            <p slot="header">标题内容</p>
+        </component1>
+
+        <hr>
+
+        <!-- 批量处理 -->
+        <component1>
+            <template slot="footer">
+                <p>底部内容1</p>
+                <p>底部内容2</p>
+            </template>
+            <p >主要内容</p>
+            <template slot="header">
+                <p>标题内容1</p>
+                <p>标题内容2</p>
+            </template>
+        </component1>
+
+        <hr>
+        
+        <!-- 作用域插槽(父组件对子组件的内容进行加工处理) -->
+        <component2 :msg="msg">
+            <template slot-scope="slotProps">
+                <h3 style="color:red;" v-if="slotProps.info=='作用域插槽'">{{slotProps.info}}</h3>
+                <h3 v-else="slotProps.info=='作用域插槽'">{{slotProps.info}}</h3>
+            </template>
+        </component2>
+
+    </div>
+
+    <script>
+        Vue.component('component', {
+            /*
+                组件插槽就是一个固定标签<slot>, 它用于显示组件标签体里的内容
+                <slot>标签体里也可以添加内容, 如果组件标签体里没有内容则显示<slot>里的内容, 如果组件标签体里有内容, 则显示组件标签体里的内容
+            */
+            template: `
+                <div>
+                    <span>Alert: </span>
+                    <b><slot>默认内容</slot><b>
+                </div>
+            `
+        })
+
+        Vue.component('component1', {
+            template: `
+                <div>
+                    <header>
+                        <slot name="header"><slot>
+                    </header>
+                    <main>
+                        <slot><slot>
+                    </main>
+                    <footer>
+                        <slot name="footer"><slot>
+                    </footer>
+                </div>
+            `
+        })
+
+        Vue.component('component2', {
+            props: ['msg'],
+            template: `
+                <slot :info="msg"><slot>
+            `
+        })
+
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: '作用域插槽',
+            }
+        })
+    </script>
+</body>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>组件注册</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <button-counter></button-counter>
+        <!-- 组件可以复用, 但是它们之间是独立的, 数据也是独立的 -->
+        <button-counter></button-counter>
+        <component-a></component-a>
+    </div>
+
+    <script>
+        //自定义组件, 这些组件是全局组件且都是Vue实例的子组件, 父组件可以直接使用子组件
+        //组件名有两种命名方式, xxx-yyy和xxxYyy, 第一种命名可以直接在#content的div里直接使用, 第二种只能通过嵌入到其他组件中才能使用
+        Vue.component('button-counter', {
+            //data中定义组件中的数据
+            //注意这里的data是一个返回值为对象的函数, 这样作是为了创造一个闭包的环境实现同组件间的数据独立性
+            data: function(){
+                return {
+                    count: 0
+                }
+            },
+            //模板语法
+            //模板的内容必须是单个根元素, 即最外层只能有一个标签
+            //错误内容: "<button>...</button><button>...</button>"
+            //正确内容: "<div><button>...</button><button>...</button></div>"
+            template: '<button @click="count++">点击了{{count}}次</button>',
+            //定义方法
+            methods: {
+
+            }
+        })
+
+        var componentA = {
+            data: function(){
+                return {
+                    count: 0
+                }
+            },
+            template: '<button @click="count++">点击了{{count}}次(局部组件)</button>'
+        }
+
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: 'Hello Vue!'
+            },
+            //注册局部组件, 局部组件只能在其注册的父组件中使用
+            components: {
+                'component-a': componentA
+            }
+        })
+    </script>
+</body>

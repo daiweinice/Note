@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>组件间数据交互(非父子)</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+        <div>
+            <h3>根组件</h3>
+            <button @click="offAllEvent">取消事件中心所有事件</button>
+        </div>
+        <component1></component1>
+        <component2></component2>
+    </div>
+
+    <script>
+        // 提供事件中心, 统一管理自定义事件
+        var hub = new Vue();
+
+        Vue.component('component1', {
+            data: function(){
+                return {
+                    num: 0
+                }
+            },
+            template: `
+                <div>
+                    <h3>兄弟组件1:{{num}}</h3>
+                    <button @click='handle'>给组件2加1</button>
+                </div>
+            `,
+            methods: {
+                handle: function() {
+                    //触发自定义事件addComponent2
+                    hub.$emit("addComponent2", 1);
+                }
+            },
+            mounted: function() {
+                // 监听事件addComponent1
+                hub.$on('addComponent1', (val) => {
+                    this.num += val;
+                });
+            }
+        })
+
+        Vue.component('component2', {
+            data: function(){
+                return {
+                    num: 0
+                }
+            },
+            template: `
+                <div>
+                    <h3>兄弟组件2:{{num}}</h3>
+                    <button @click='handle'>给组件1加1</button>
+                </div>
+            `,
+            methods: {
+                handle: function() {
+                    //触发自定义事件addComponent1
+                    hub.$emit("addComponent1", 1);
+                }
+            },
+            mounted: function() {
+                // 监听事件addComponent2
+                hub.$on('addComponent2', (val) => {
+                    this.num += val;
+                });
+            }
+        })
+
+        var vm = new Vue({
+            el: '#content',
+            methods: {
+                offAllEvent: function() {
+                    //销毁事件
+                    hub.$off('addComponent1');
+                    hub.$off('addComponent2');
+                }
+            }
+        })
+    </script>
+</body>

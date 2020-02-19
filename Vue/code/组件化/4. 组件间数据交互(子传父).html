@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>组件间数据交互(父传子)</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="content">
+       <h3>父组件msg的值: {{msg}}</h3>
+       <component1 :msg="msg"></component1>
+       <!-- 
+           props遵循单向流动原则, 所以子组件不能直接修改父组件的数据的值
+           如果子组件想要修改父组件的值, 需要通过$emit()触发自定义事件, 然后父组件监听该自定义事件, 并做相应处理。(改值的权力还是在父组件手中)
+        -->
+       <component2 :msg="msg" @event-name="changeMsg($event)"></component2>
+    </div>
+
+    <script>
+
+        Vue.component('component1', {
+            data: function(){
+                return {
+                    
+                }
+            },
+            props: ['msg'],
+            template: `
+                <div>
+                    <h3>子组件1接收父组件msg的值: {{msg}}</h3>
+                    <button @click='msg="父组件的值(已改动)"'>通过子组件按钮直接改变父组件的msg值(无效)</button>
+                </div>
+            `,
+        })
+
+        Vue.component('component2', {
+            data: function(){
+                return {
+                    
+                }
+            },
+            props: ['msg'],
+            template: `
+                <div>
+                    <h3>子组件2接收父组件msg的值: {{msg}}</h3>
+                    <button @click='$emit("event-name", "新的msg内容")'>通过子组件按钮像父组件传递自定义事件改变父组件的msg值</button>
+                </div>
+            `,
+        })
+
+        var vm = new Vue({
+            el: '#content',
+            data: {
+                msg: "父组件的内容"
+            },
+            methods: {
+                changeMsg: function(val){
+                    this.msg = val;
+                }
+            }
+        })
+
+    </script>
+</body>
