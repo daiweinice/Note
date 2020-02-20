@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fetch API</title>
+</head>
+<body>
+    <script>
+
+        //fetch基本使用
+        fetch('http://localhost:3000/fdata').then(function(data){
+            // text()方法属于fetch API的一部分，它返回一个Promise实例对象，用于获取后台返回的数据
+            return data.text();
+            //如果后端返回的数据是json字符串, 则用json()方法将其转化为对象
+            //return data.json();
+        }).then(function(data){
+            //从这里开始才是真正操作数据的地方
+            console.log(data);
+        }).then(function(data){
+            console.log(data);
+        })
+
+        //带参数fetch--传统URL方式
+        fetch('http://localhost:3000/books?id=123', {
+            //第二个参数为一个对象, 用于进行一些配置, 如method(string), body(string), headers(obj)
+            method: 'get', //默认为GET
+        })
+        .then(function(data){
+            return data.text();
+        })
+        .then(function(data){
+            console.log(data)
+        });
+
+        //带参数fetch--restful风格GET/DELETE
+        GET参数传递-restful形式的URL
+        fetch('http://localhost:3000/books/456', {
+            method: 'get'
+        })
+        .then(function(data){
+            return data.text();
+        })
+        .then(function(data){
+            console.log(data)
+        });
+
+        //带参数fetch--POST/PUT
+        fetch('http://localhost:3000/books', {
+            method: 'post',
+            body: 'uname=lisi&pwd=123', 
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(function(data){
+            return data.text();
+        })
+        .then(function(data){
+            console.log(data)
+        });
+
+        //带参数fetch--POST/PUT+JSON
+        fetch('http://localhost:3000/books', {
+            method: 'post',
+            body: JSON.stringify({
+                uname: '张三',
+                pwd: '456'
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(data){
+            return data.text();
+        })
+        .then(function(data){
+            console.log(data)
+        });
+
+    </script>
+</body>
+
+<!-- 
+    fetch基于promise实现, 是xhr的升级版。
+ -->

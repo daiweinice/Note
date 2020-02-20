@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>async和await</title>
+</head>
+<body>
+    <script>
+        //用async关键字修饰函数
+        async function queryData() {
+            //await用于接收响应数据
+            var res = await axios.get('http://localhost:8080/test');
+            //对响应数据进行处理
+            return res.data;
+        }
+
+        //async函数的返回值是一个Promise
+        queryData().then(function(data){
+            console.log(data);
+        })
+
+        async function queryData() {
+            //await获得异步结果
+            var res = await new Promise(function(resolve, reject){
+                setTimeout(function(){
+                    resolve('nihao')
+                },1000);
+            })
+            //这里的res就是'nihao'
+            return res;
+        }
+
+        //处理多个异步请求
+        async function queryData() {
+            var info = await axios.get('http://localhost:8080/async1');
+            var ret = await axios.get('http://localhost:8080/async2?info=' + info.data);
+            return ret.data;
+        }
+        queryData().then(function(data){
+            console.log(data)
+        })
+    </script>
+</body>
+
+<!-- 
+    async/await是ES7新引入的语法, 可以更加方便的进行异步操作
+    async关键字用于修饰函数, 用async修饰的函数返回值是一个Promise
+    await关键字用于async函数内部, 用于获得异步结果
+ -->

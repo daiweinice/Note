@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Promise+xhr</title>
+</head>
+<body>
+    <script>
+        function queryData(url) {
+            var p = new Promise(function(resolve, reject){
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function(){
+                    if(xhr.readyState == 4 && xhr.status == 200) {
+                        // 处理正常的情况
+                        resolve(xhr.responseText);
+                    }else{
+                        // 处理异常情况
+                        reject('服务器错误');
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send(null);
+            });
+            return p;
+        }
+
+        //发送多个Ajax请求且保证顺序
+        queryData('http://localhost:3000/data')
+        .then(function(data){
+            console.log(data);
+            //通过返回一个Promise对象从而实现链式操作, 解决传统方法发送多个顺序Ajax出现回调地狱的问题
+            return queryData('http://localhost:3000/data1');
+        })
+        .then(function(data){
+            console.log(data);
+            return queryData('http://localhost:3000/data2');
+        })
+        .then(function(data){
+            console.log(data);
+            //这里以data作为返回值, 则then方法会将data封装进Promise对象, 并将Promise作为其返回值。这样可以保证链式操作不会中断。
+            //这个返回的普通数据, 将会被下一个then的函数所接收
+            return data;
+        })
+        .then(function(data){
+            //这里的data就是上一个then的返回值
+            console.log(data);
+        });
+    </script>
+</body>
+
+<!-- 
+    Promise常用API
+    1. 实例方法
+       + p.then(function(data){}) 得到异步任务的正确结果, 并处理相关数据
+       + p.catch(function(data){}) 获取异常信息
+       + p.finally(function(data){}) 成功与否都会执行
+    2. 对象方法
+       +并发处理多个异步任务, 所有任务都执行完才能得到结果. (下面的代码执行结果为: 三个任务都执行完时, 三个结果被封装为一个数组, 一起在控制台显示)
+       Promise.all([p1, p2, p3]).then((result) => {
+           console.log(result);
+       }) 
+       +并发处理多个异步任务, 只得到最先完成的任务的结果。(其他任务并不会被终止, 只是不再关心它们的结果)
+       Promise.race([p1, p2, p3]).then((result) => {
+           console.log(result);
+       }) 
+ -->

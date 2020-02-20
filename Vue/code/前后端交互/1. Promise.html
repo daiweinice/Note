@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Promise</title>
+</head>
+<body>
+    <script>
+        //创建一个Promise对象
+        var p = new Promise(function(resolve, reject){
+            //这里执行异步任务, 如发送Ajax请求
+            var flag = true;
+            if(flag) {
+                // 正常情况, 执行resolve函数
+                resolve('Success');
+            }else{
+                // 异常情况, 执行reject函数
+                reject('Error');
+            };
+        });
+
+        //用于处理Promise对象传递下来的数据, 如处理Ajax传回的数据
+        //then也可以只有一个参数, 这个参数是一个函数, 用于处理resolve传下来的数据, 表示只处理正常情况
+        //then()的返回值是一个Promise对象。如果参数函数返回的是一个Promise对象则直接把它作为返回值, 如果不是, 则将参数作为数据在封装进Promise对象中并返回。
+        //由于then()的返回值也是一个Promise对象, 所以可以进行链式操作.then().then().then(), 达到数据一层层传递的效果。
+        p.then(
+            //处理resolve传下来的数据. data就是上面resolve传过来的参数'Success'
+            function(data){
+                console.log(data)
+            },
+            //处理reject传下来的数据, data就是上面reject传过来的参数'Error'
+            function(data){
+                console.log(data)
+            }
+        );
+    </script>
+</body>
+
+<!-- 
+    Promise是异步编程(不仅仅是Ajax)的一种解决方案。从语法上讲, Promise就是一个对象, 从它可以获取异步操作的消息。
+    使用Promise有以下好处:
+    1. 可以避免传统Ajax多层异步调用嵌套问题(回调地狱)
+    2. Promise对象提供了简洁的API, 使得控制异步操作更加容易
+ -->

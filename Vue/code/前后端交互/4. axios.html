@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>axios</title>
+
+</head>
+<body>
+    <script type="text/javascript" src="js/axios.js"></script>
+    <script>
+
+        //全局配置
+        //基准URL, 抽取出URL公共部分
+        axios.defaults.baseURL = 'https://localhost:3000'; 
+        //超时时间
+        axios.defaults.timeout = 2500; 
+        //添加请求头信息
+        axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+        axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+
+        //拦截器
+        //1. 请求拦截器, 在请求发出之前先进行一些处理
+        axios.interceptors.request.use(function(config) {
+            console.log(config.url);
+            config.headers.mytoken = 'nihao';
+            return config;
+        }, function(err){
+            console.log(err);
+        })
+
+        //2. 响应拦截器, 在获取响应数据之前对数据进行处理
+        axios.interceptors.response.use(function(res) {
+            //这样后面get、post、delete、put得到的res就直接是响应的数据了, 而不需要再通过res.data获取数据
+            //return res.data;
+        }, function(err){
+            console.log(err)
+        })
+
+        //基本使用
+        //axios有四个方法, get、post、delete、put, 其中get与delete类似, put与post类似
+        axios.get('/adata').then(function(res){
+            //res.data才是后端传回的数据
+            //如果后端传回的是json格式数据, 则会自动转化为对象
+            cosole.log(res.data)
+        })
+
+        //带参数+URL方式
+        axios.get('/axios?id=123').then(function(res){
+            console.log(res.data)
+        })
+
+        //带参数+params方式
+        axios.get('/axios', {
+            params: {
+                id: 789
+            }
+        }).then(function(res){
+            console.log(res.data)
+        })
+
+        //POST方法
+        //默认以json格式传递给后端
+        axios.post('/axios', {
+            uname: 'lisi',
+            pwd: 123
+        }).then(function(res){
+            console.log(res.data)
+        })
+
+        //以表单的方式传递给后端
+        var params = new URLSearchParams();
+        params.append('uname', 'zhangsan');
+        params.append('pwd', '111');
+        axios.post('/axios', params).then(function(res){
+            console.log(res.data)
+        })
+
+
+    </script>
+</body>
+
+<!-- 
+    axios是一个基于Promise的Ajax库
+    它有以下特点:
+    1. 支持浏览器和node.js
+    2. 基于Promise
+    3. 能拦截请求和响应
+    4. JSON自动转化
+ -->

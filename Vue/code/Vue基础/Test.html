@@ -3,11 +3,20 @@
     <meta charset="UTF-8">
     <title>Test</title>
     <script src="js/vue.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>   
 </head>
 <body>
     <div id="content">
         <p>{{user.name}}</p>
         <input type="text" v-model="user.name">
+
+        <hr>
+
+        <span>评分: </span>
+        <el-rate v-model="rate" style="display: inline;"></el-rate>
     </div>
 
     <script>
@@ -17,7 +26,8 @@
                 user: {
                     name: 'David',
                     age: '21',
-                }
+                },
+                rate: '3'
             }
         })
     </script>
