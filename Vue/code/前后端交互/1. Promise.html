@@ -18,9 +18,9 @@
             };
         });
 
-        //用于处理Promise对象传递下来的数据, 如处理Ajax传回的数据
+        //用于接收、处理、传递Promise的数据, 如处理Ajax传回的数据
         //then也可以只有一个参数, 这个参数是一个函数, 用于处理resolve传下来的数据, 表示只处理正常情况
-        //then()的返回值是一个Promise对象。如果参数函数返回的是一个Promise对象则直接把它作为返回值, 如果不是, 则将参数作为数据在封装进Promise对象中并返回。
+        //then()的返回值是一个Promise对象。如果参数函数返回的是一个Promise对象则直接把它作为返回值, 如果不是, 则将返回值作为数据在封装进Promise对象中并返回。
         //由于then()的返回值也是一个Promise对象, 所以可以进行链式操作.then().then().then(), 达到数据一层层传递的效果。
         p.then(
             //处理resolve传下来的数据. data就是上面resolve传过来的参数'Success'

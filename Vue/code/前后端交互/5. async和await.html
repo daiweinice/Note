@@ -18,7 +18,7 @@
             console.log(data);
         })
 
-        async function queryData() {
+        async function queryData1() {
             //await获得异步结果
             var res = await new Promise(function(resolve, reject){
                 setTimeout(function(){
@@ -43,6 +43,19 @@
 
 <!-- 
     async/await是ES7新引入的语法, 可以更加方便的进行异步操作
-    async关键字用于修饰函数, 用async修饰的函数返回值是一个Promise
+    async关键字用于修饰函数, 用async修饰的函数返回值是一个Promise对象, 如果返回值不是Promise对象, 则会先把返回值作为数据封装进Promise对象, 然后再返回该Promise对象。
     await关键字用于async函数内部, 用于获得异步结果
  -->
+
+ <!-- 
+    最终总结:
+
+    Promise用于执行异步任务(不仅仅是Ajax), 同时它也就拥有了异步任务所产生的数据。
+    它的then()方法可以接收它拥有的数据, 同时then()的返回值还是promise对象, 这样就可以实现链式编程, 一层层的传递数据。
+    在使用传统Ajax顺序处理多个异步任务时, 第二个异步任务需要使用第一个异步任务的数据就需要在第一个Ajax中嵌套第二个Ajax, 这样嵌套会出现回调地狱问题。
+    而Promise在处理异步任务时, 产生的数据可以通过then()方法接收并处理, 同时还可以通过链式编程继续传递给下一个then()处理, then()方法之间是线性的而不是嵌套的, 使得代码更美观, 可读性更高。
+    
+    如果把promise看作是储存数据的容器, 那么它的then()方法就是用于获取容器中的数据。
+    await用于获取异步结果, 异步结果本质上就是promise中的数据
+    axio的返回值就是一个promise对象, 原来我们需要用then方法获取到数据, 现在使用await关键字可以直接获取到数据, 更加方便。
+  -->

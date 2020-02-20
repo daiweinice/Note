@@ -26,7 +26,6 @@
         }, function(err){
             console.log(err);
         })
-
         //2. 响应拦截器, 在获取响应数据之前对数据进行处理
         axios.interceptors.response.use(function(res) {
             //这样后面get、post、delete、put得到的res就直接是响应的数据了, 而不需要再通过res.data获取数据
@@ -36,7 +35,7 @@
         })
 
         //基本使用
-        //axios有四个方法, get、post、delete、put, 其中get与delete类似, put与post类似
+        //axios有四个方法, get、post、delete、put, 其中get与delete类似, put与post类似, 这四个方法的返回值都是Promise对象。
         axios.get('/adata').then(function(res){
             //res.data才是后端传回的数据
             //如果后端传回的是json格式数据, 则会自动转化为对象

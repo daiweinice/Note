@@ -5,6 +5,7 @@
 </head>
 <body>
     <script>
+        //理解Promise是如何解决传统Ajax的回调地狱问题的
         function queryData(url) {
             var p = new Promise(function(resolve, reject){
                 var xhr = new XMLHttpRequest();
