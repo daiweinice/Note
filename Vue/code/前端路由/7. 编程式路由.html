@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>编程式路由</title>
+    <!-- 导入 vue 文件 -->
+    <script src="js/vue.js"></script>
+    <script src="js/vue-router.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <router-link to="/user/1">User1</router-link>
+        <router-link to="/user/2">User2</router-link>
+        <router-link to="/register">Register</router-link>
+
+        <router-view></router-view>
+    </div>
+
+    <script>
+        const User = {
+            props: ['id', 'uname', 'age'],
+            template: `
+                <div>
+                    <h1>User 组件 -- 用户id为: {{id}} -- 姓名为:{{uname}} -- 年龄为：{{age}}</h1>
+                    <button @click="goRegister">跳转到注册页面</button>
+                </div>
+            `,
+            methods: {
+                goRegister() {
+                    //push方法用于路由
+                    this.$router.push('/register')
+                }
+            },
+        }
+
+        const Register = {
+            template: `
+                <div>
+                    <h1>Register 组件</h1>
+                    <button @click="goBack">后退</button>
+                </div>
+            `,
+            methods: {
+                goBack() {
+                    //go方法用于前进和后退
+                    this.$router.go(-1)
+                }
+            }
+        }
+
+        const router = new VueRouter({
+            routes: [
+                { path: '/', redirect: '/user/1' },
+                {
+                    name: 'user',
+                    path: '/user/:id',
+                    component: User,
+                    props: route => ({ uname: 'daiwei', age: 21, id: route.params.id })
+                },
+                { path: '/register', component: Register }
+            ]
+        })
+
+        const vm = new Vue({
+            el: '#app',
+            data: {},
+            router
+        })
+    </script>
+</body>
+
+</html>
+
+<!-- 
+    1. 申明式路由
+    通过点击链接实现导航的方式，叫做声明式导航。例如：普通网页中的 <a></a> 链接 或 vue 中的 <router-link></router-link>
+
+    2. 编程式路由
+    通过调用JavaScript形式的API实现导航的方式，叫做编程式导航。例如：普通网页中的 location.href
+
+    3. vue-router的两个方法
+    
+    (1) this.$router.push('hash地址'), 用于路由
+        + 字符串(路径名称): router.push('/home')
+        + 对象: router.push({ path: '/home' })
+        + 命名的路由(传递参数): router.push({ name: '/user', params: { userId: 123 }})
+        + 带查询参数，变成 /register?uname=lisi: router.push({ path: '/register', query: { uname: 'lisi' }})
+
+    (2) this.$router.go(n), 用于前进和后退
+        + this.$router.go(1), 前进1
+        + this.$router.go(-1), 后退1 
+ -->

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>vue-router基本使用</title>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-router.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- router-link 是 vue 中提供的标签，默认会被渲染为 a 标签 -->
+        <!-- to 属性默认会被渲染为 href 属性 -->
+        <!-- to 属性的值默认会被渲染为 # 开头的 hash 地址 -->
+        <router-link to="/user">User</router-link>
+        <router-link to="/register">Register</router-link>
+
+        <!-- 路由填充位（也叫做路由占位符） -->
+        <!-- 将来通过路由规则匹配到的组件，将会被渲染到 router-view 所在的位置 -->
+        <router-view></router-view>
+    </div>
+
+    <script>
+        const User = {
+            template: '<h1>User 组件</h1>'
+        }
+
+        const Register = {
+            template: '<h1>Register 组件</h1>'
+        }
+
+        // 创建路由实例对象
+        const router = new VueRouter({
+            // 配置路由规则
+            routes: [
+                //路由重定向
+                {path: '/', redirect: '/user'},
+                //component只能接收对象, 不能接收字符串
+                { path: '/user', component: User },
+                { path: '/register', component: Register }
+            ]
+        })
+
+        const vm = new Vue({
+            el: '#app',
+            data: {},
+            // 挂载路由实例对象
+            // router: router, 根据Vue语法, 如果属性名和属性值一样, 则可以简写如下
+            router
+        })
+    </script>
+</body>
+
+</html>
+
+<!-- 
+    Vue Router是Vue官方开发的路由管理组件
+    它包含以下功能:
+    1. 支持HTML5 历史模式或 hash 模式
+    2. 支持嵌套路由
+    3. 支持路由参数
+    4. 支持编程式路由
+    5. 支持命名路由
+ -->

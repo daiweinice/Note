@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>路由传递参数</title>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-router.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <router-link to="/user/1">User1</router-link>
+        <router-link to="/user/2">User2</router-link>
+        <router-link to="/user/3">User3</router-link>
+
+        <!-- 路由占位符 -->
+        <router-view></router-view>
+    </div>
+
+    <script>
+        const User = {
+            //接收路由传递的参数
+            props: ['id'],
+            template: '<h1>User 组件 -- 用户id为: {{id}}</h1>'
+        }
+
+        const router = new VueRouter({
+            routes: [
+                { path: '/', redirect: '/user/1' },
+                //props有三种类型, 布尔、对象、函数, 分别使用于不同情况
+                { path: '/user/:id', component: User, props: true},
+            ]
+        })
+
+        const vm = new Vue({
+            el: '#app',
+            data: {},
+            router
+        })
+    </script>
+</body>
+
+</html>
+
+<!-- 
+    1. props为true: 适用于只传递路由动态参数
+
+    2. props为对象, 适用于只传递其他参数
+    如: props: {name: 'daiwei', age: 21}
+
+    3. props为函数, 适用于前两者结合
+    如: props: route => ({name: 'daiwei', age: 21, id:route.params.id})
+ -->

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>手动实现路由功能</title>
+    <script src="js/vue.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- 切换组件的超链接 -->
+        <a href="#/zhuye">主页</a>
+        <a href="#/keji">科技</a>
+        <a href="#/caijing">财经</a>
+        <a href="#/yule">娱乐</a>
+
+        <component :is="comName"></component>
+    </div>
+
+    <script>
+        // #region 定义需要被切换的 4 个组件
+        // 主页组件
+        const zhuye = {
+            template: '<h1>主页信息</h1>'
+        }
+
+        // 科技组件
+        const keji = {
+            template: '<h1>科技信息</h1>'
+        }
+
+        // 财经组件
+        const caijing = {
+            template: '<h1>财经信息</h1>'
+        }
+
+        // 娱乐组件
+        const yule = {
+            template: '<h1>娱乐信息</h1>'
+        }
+        // #endregion
+
+        // #region vue 实例对象
+        const vm = new Vue({
+            el: '#app',
+            data: {
+                comName: 'zhuye'
+            },
+            // 注册私有组件
+            components: {
+                zhuye,
+                keji,
+                caijing,
+                yule
+            }
+        })
+        // #endregion
+
+        // 监听 window 的 onhashchange 事件，根据获取到的最新的 hash 值，切换要显示的组件的名称
+        window.onhashchange = function () {
+            // 通过 location.hash 获取到最新的 hash 值
+            console.log(location.hash);
+            switch (location.hash.slice(1)) {
+                case '/zhuye':
+                    vm.comName = 'zhuye'
+                    break
+                case '/keji':
+                    vm.comName = 'keji'
+                    break
+                case '/caijing':
+                    vm.comName = 'caijing'
+                    break
+                case '/yule':
+                    vm.comName = 'yule'
+                    break
+            }
+        }
+    </script>
+</body>
+
+</html>
+
+<!-- 
+    1. 路由
+    路由的本质就是对应关系, 再开发中, 路由分为前端路由和后端路由。
+    
+    2. 后端路由
+    后端路由: 根据不同的用户URL请求, 返回不同的内容。本质就是URL请求地址与服务器资源之间的对应关系。
+    后端路由的明显劣势在于存在性能问题, 对于服务器的性能要求较大
+
+    3. 前端路由
+    后来有了Ajax前端路由, 前端渲染提高性能, 但是不支持浏览器的前进后退操作。
+
+    于是出现了SPA(Single Page Application)单页面应用程序, 整个网站只有一个页面, 内容的变化通过Ajax局部更新, 同时支持浏览器的前进后退操作。
+    SPA的实现原理是基于URL的hash(hash的变化会导致浏览器记录访问历史的变化, 但是hash的变化不会触发新的URL请求)
+    如: http:localhost:8080/index.html#/user/1  #后面的'/user/1'就是该URL的hash
+    
+    在实现SPA过程中，最核心的技术点就是前端路由
+    
+ -->
