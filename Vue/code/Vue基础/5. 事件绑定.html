@@ -34,7 +34,8 @@
                     this.num++;
                     console.log(event.target.innerHTML);
                 },
-                addNum2: function(data1, data2, event){
+                //这种写法也可以
+                addNum2(data1, data2, event){
                     this.num++;
                     console.log(data1 + ' '+ data2);
                     console.log(event.target.innerHTML);

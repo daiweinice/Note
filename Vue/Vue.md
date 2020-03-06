@@ -6,11 +6,15 @@
 
 **渐进式:** 声明式渲染→组件系统→客户端路由→集中式状态管理→项目构建
 
+
+
 ### 2 .Vue特点
 
 + 易用：熟悉HTML、CSS、JavaScript知识后，可快速上手Vue
 + 灵活：在一个库和一套完整框架之间自如伸缩
 + 高效：20kB运行大小，超快虚拟 DOM
+
+
 
 ### 3. Vue与JQuery对比
 
@@ -20,6 +24,8 @@
 + 单页面应用
 + 组件复用
 + 性能
+
+
 
 ### 4. Vue核心概念
 
@@ -74,8 +80,6 @@
 + **生命周期:** 
 
     ![](images/实例生命周期.png)
-
-
 
 
 
@@ -173,6 +177,7 @@ for(let i = 0; i < 3; i++) {
 ```javascript
 // 导入后会执行m2.js的代码
 import './m2.js'
+import '../css/main.css'
 ```
 
 
@@ -187,6 +192,8 @@ webpack 提供了友好的**模块化支持，以及代码压缩混淆、处理 
 
 目前绝大多数企业中的前端项目，都是基于 webpack 进行打包构建的。
 
+**webpack更适合构建单页面应用而非多页面应用。**
+
 ![](images/webpack.png)
 
 
@@ -195,7 +202,7 @@ webpack 提供了友好的**模块化支持，以及代码压缩混淆、处理 
 
 **1. 安装webpack**
 
-`npm install webpack webpack-cli -g`命令, 安装webpack
+`npm install webpack webpack-cli -D`命令, 安装webpack
 
 **Tips: 关于npm install**
 
@@ -211,6 +218,8 @@ webpack 提供了友好的**模块化支持，以及代码压缩混淆、处理 
 + 新建项目空白目录，并运行 `npm init –y` 命令，初始化包管理配置文件 package.json
 
 + 新建 src 源代码目录, 里面用于存放前端代码
+
+    这里面有一个非常重要的文件`index.js`, 它将作为这个前端项目打包的入口。 
 
 + 在项目根目录下, 通过`npm install xxx -D/-S`将需要的包导入项目
 
@@ -244,3 +253,529 @@ module.exports = {
 
 
 
+#### (3) 入口与出口
+
+webpack4.X版本默认指定入口为`src/index.js`, 出口为`dist/main.js`, 我们也可以进行手动设置
+
+```javascript
+const path = require('path') // 导入 node.js 中专门操作路径的模块
+module.exports = {
+	entry: path.join(__dirname, './src/index.js'), // 打包入口文件的路径
+ 	output: {
+ 		path: path.join(__dirname, './dist'), // 输出文件的存放路径
+ 		filename: 'bundle.js' // 输出文件的名称
+	} 
+}
+```
+
+入口起点指示 webpack 应该使用哪个模块，来作为构建其内部 依赖图(dependency graph) 的开始。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
+
+所以入口JS文件中需要通过 import 导入项目所需要的各种模块和库, 如`import 'semantic-ui-css/semantic.min.css'`。webpack会根据直接和间接的依赖关系, 将这些库和模块处理并打包。
+
+
+
+#### (4) 自动打包
+
+配置自动打包后, 每次修改代码, webpack都会自动打包, 更加方便。
+
++ `npm install webpack-dev-server –g`命令安装自动打包工具
+
++ 修改`package.json`
+
+    ```javascript
+    "scripts": {
+    	"dev": "webpack-dev-server" // script 节点下的脚本，可以通过 npm run 执行
+    }
+    ```
+
++ 修改`index.html`的src为`/main.js`, 即引入打包后生成的main.js文件
++ `npm run dev`进行打包
++ 在浏览器通过http://localhost:8080查看
+
+**Tips:**
+
++ webpack-dev-server 会启动一个实时打包的 http 服务器
+
++ webpack-dev-server 打包生成的输出文件，默认放到了项目根目录中，而且是虚拟的、看不见的
+
++ 自动打包可以带上参数
+
+    --open表示打包完成后打开
+
+    --host设置IP地址
+
+    --port设置端口号
+
+    ```json
+    "scripts": {
+    	"dev": "webpack-dev-server --open --host 127.0.0.1 --port 8888"
+    }
+    ```
+
+
+
+#### (5) 生成预览页面
+
+在配置了自动打包后, localhost首页是一个文件列表, 如果我们希望首页直接是一个html页面, 则需要使用一个插件
+
++ `npm install html-webpack-plugin –D `安装生成预览页面的插件
+
++ 修改`webpack.config.js`
+
+    ```javascript
+    // 导入生成预览页面的插件，得到一个构造函数
+    const HtmlWebpackPlugin = require('html-webpack-plugin')
+    const htmlPlugin = new HtmlWebpackPlugin({ // 创建插件的实例对象
+    	template: './src/index.html', // 指定要用到的模板文件
+    	filename: 'index.html' // 指定生成的文件的名称，该文件存在于内存中，在目录中不显示
+    })
+    
+    //向外暴露配置对象
+    module.exports = {
+     	plugins: [ htmlPlugin ] // plugins 数组是 webpack 打包期间会用到的一些插件列表
+    }
+    ```
+
+
+
+#### (6) 加载器
+
+在实际开发过程中，webpack 默认只能打包处理以 .js 后缀名结尾的模块，其他非 .js 后缀名结尾的模块, webpack 默认处理不了，需要调用 loader 加载器才可以正常打包，否则会报错！
+
+loader 加载器可以协助 webpack 打包处理特定的文件模块，比如：
+
++ less-loader 可以打包处理 .less 相关的文件
+
++ sass-loader 可以打包处理 .scss 相关的文件
+
++ url-loader 可以打包处理 css 中与 url 路径相关的文件
+
+loader调用过程:
+
+![](images/webpack loader调用过程.png)
+
+**1. css加载器**
+
++ `npm install style-loader css-loader -D`安装css加载器
+
++ 在js文件中引入css文件
+
+    ```java
+    import './index.css'
+    ```
+
++ 修改`webpack.config.js`
+
+    ```javascript
+    module.exports={
+    	module: {
+    		rules: [
+            	//test用正则表达式指定文件类型, use指定使用的加载器
+            	//加载器的顺序是固定的, 多个loader的调用顺序是从后往前调
+    			{ test: /\.css$/, use: ['style-loader', 'css-loader'] }
+    		]
+     	}   
+    }
+    ```
+
+**2. less**
+
++ `npm i less-loader less -D `
++ `{ test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] }`
+
+**3. scss(sass)**
+
++ `npm i sass-loader node-sass -D`
++ `{ test: /\.scss$/, use: ['style-loader', 'css-loader', 'sass-loader'] }`
+
+**4. postCSS自动添加css的兼容前缀**
+
++ `npm i postcss-loader autoprefixer -D `
+
++ `postcss.config.js`
+
+    ```javascript
+     const autoprefixer = require('autoprefixer') // 导入自动添加前缀的插件
+     module.exports = {
+     	plugins: [ autoprefixer ] // 挂载插件
+     }
+    ```
+
++ `{ test:/\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] }`
+
+**5. 图片和字体 **
+
++ `npm i url-loader file-loader -D `
+
++ `{ test: /\.jpg|png|gif|bmp|ttf|eot|svg|woff|woff2$/, use: 'url-loader?limit=16940'}`
+
+    ?后表示该加载器的参数, limit用于指定图片大小, 小于指定大小的图片都会被转为base64格式
+
+**6. 高级JS语法**
+
++ `npm i babel-loader @babel/core @babel/runtime -D`babel转换器
+
++ `npm i @babel/preset-env @babel/plugin-transform-runtime @babel/plugin-proposal-class-properties –D `babel语法插件
+
++ `babel.config.js`
+
+    ```javascript
+    module.exports = {
+    	presets: [ '@babel/preset-env' ],
+    	plugins: [ '@babel/plugin-transform-runtime', '@babel/plugin-proposalclass-properties’ ]
+    }
+    ```
+
++ ` { test: /\.js$/, use: 'babel-loader', exclude: /node_modules/ }` 排除node_modules的js文件
+
+
+
+#### (7) webpack打包发布
+
+package.json
+
+```json
+"scripts": {
+    "build": "webpack -p"
+}
+```
+
+执行`npm run build`后, 会在dist目录中生成最终的项目文件。
+
+
+
+### 4. Vue单文件组件
+
+传统方式定义Vue组件, 有以下问题:
+
++ 全局定义的组件必须保证组件的名称不重复
+
++ 字符串模板缺乏语法高亮，在 HTML 有多行的时候，需要用到丑陋的 \
++ 不支持 CSS 意味着当 HTML 和 JavaScript 组件化时，CSS 明显被遗漏
++  没有构建步骤限制，只能使用 HTML 和 ES5 JavaScript, 而不能使用预处理器（如：Babel）
+
+所以Vue提供了一种解决方案, 使用Vue单文件组件, **一个组件对应一个.vue文件**
+
+#### (1) 单文件组件语法
+
+`component.vue`
+
+```vue
+<template>
+	<!-- 这里用于定义Vue组件的模板内容 -->
+</template>
+ 
+<script>
+	// 这里用于定义Vue组件的业务逻辑
+ 	export default {
+ 		data: () => { return {} }, // 私有数据
+ 		methods: {} // 处理函数,
+    	components: {}, //组件
+        //...
+ 	}
+</script>
+
+<style scoped>
+	//用于定义组件样式, scoped关键字防止组件间样式冲突 
+</style>
+```
+
+
+
+#### (2) webpack vue 加载器
+
++ `npm i vue-loader vue-template-compiler -D`
+
++ `webpack.config.js`
+
+    ```javascript
+    const VueLoaderPlugin = require('vue-loader/lib/plugin')
+    module.exports = {
+        module: {
+     		rules: [
+     			{ test: /\.vue$/, loader: 'vue-loader' }
+     		]
+     	},
+    	plugins: [
+    		 new VueLoaderPlugin() // 请确保引入这个插件！
+        ] 
+    }
+    ```
+
+
+
+#### (3) 在webpack项目中使用vue
+
++ `npm install vue –S`
+
++ ```javascript
+    // 1. 导入 Vue 构造函数
+    import Vue from 'vue'
+    // 2. 导入组件, 导入后可以通过<component>引用
+    import App from './App.vue'
+    
+    const vm = new Vue({
+     	// 3. 指定 vm 实例要控制的页面区域
+     	el: '#app',
+     	// 4. 通过 render 函数，把指定的组件渲染到 el 区域中。通过import导入的Vue实例只支持该方式渲染组件, 不支持components方式的设置
+     	render: h => h(App)
+    })
+    ```
+
+
+
+### 5. Vue脚手架
+
+Vue 脚手架用于快速生成 Vue 项目基础架构
+
+#### (1) 安装
+
+安装命令: `npm install -g @vue/cli`
+
+
+
+#### (2) 使用
+
++ 命令行交互方式: ` vue create my-project`
++ 图形界面方式: `vue ui`
+
+
+
+#### (3) 项目结构
+
+![](images/Vue项目结构.png)
+
+**Tips:** 
+
++ Vue-cli创建的项目模板src根目录有一个`main.js`和`app.vue`, 其中`main.js`就是打包入口, `app.vue`可以当作一个导航页面组件, 通过vue-router路由到对应内容。`main.js`中需要创建一个Vue实例, 导入对应的router和store, 并挂载`public/index.html`中的`#app`元素, 将`app.vue`组件渲染到`#app`元素内
++ Vue-cli 4.x版本没有单独的`webpack.config.js`, 如需进行webpack相关配置, 可以在`vue.config.js`中配置
+
++ 放置在 `public` 目录下或通过绝对路径被引用的资源将会直接被拷贝，而不会经过 webpack 的处理。
+
+
+
+#### (4) Vue-cli配置
+
++ 方式一: 在`package.json`中配置(不推荐, package.json主要用于包的配置信息, 为了便于维护可以新建一个配置文件)
+
+    ```json
+    "vue": {
+    	"devServer": {
+    		"port": "8888",
+    		"open" : true
+    	}
+    }
+    ```
+
++ 方式二: 新建一个配置文件`vue.config.js`, 具体可配置项参考官方文档。
+
+    ```javascript
+     // vue.config.js
+     module.exports = {
+     	devServer: {
+     		port: 8888,
+            open: true
+     	},
+        //解决build项目后, file://协议无法找到相关资源
+        publicPath: './'
+ }
+    ```
+    
+
+
+
+### 6. Vuex
+
+传统的Vue组件之间进行数据共享, 是通过属性绑定和事件绑定的方式, 当数据量很大时, 这种数据共享方式会变得非常复杂繁琐。使用Vuex组件可以很好的解决该问题。
+
+Vuex 是实现组件全局状态（数据）管理的一种机制，可以方便的实现组件之间数据的共享。使用Vuex有如下好处:
+
++ 能够在 vuex 中集中管理共享的数据，易于开发和后期维护
++ 能够高效地实现组件之间的数据共享，提高开发效率
++ 存储在 vuex 中的数据都是响应式的，能够实时保持数据与页面的同步
+
+![](images/Vuex.png)
+
+#### (1) Vuex基本使用
+
++ `npm install vuex -S`
+
++ 导入
+
+    ```javascript
+    import Vue from 'vue'
+    import Vuex from 'vuex'
+    Vue.use(Vuex)
+    ```
+
++ 创建store对象
+
+    ```javascript
+    const store = new Vuex.Store({
+    	// state 中存放的就是全局共享的数据
+     	state: { count: 0 },
+        mutations: {方法对象},
+        actions: {方法对象},
+        getters: {方法对象}
+    })
+    ```
+
++ 将store对象添加到实例中
+
+    ```java
+    new Vue({
+    	el: '#app',
+     	render: h => h(app),
+     	router,
+     	store
+    })
+    ```
+
+
+
+#### (2) Vuex核心概念
+
++ **state:** 提供唯一的公共数据源，所有共享的数据都要统一放到 Store 的 State 中进行存储。
+
+    组件访问state中的数据的两种方式:
+
+    + `this.$store.state.全局数据名称`
+
+    + 把全局数据当作组件的一个计算属性
+
+        ```javascript
+        import { mapState } from 'vuex'
+        
+        //计算属性
+        computed: {
+            //此时count就相当于该组件的一个计算属性
+        	...mapState(['count'])
+        }
+        ```
+
++ **mutations:**  用于定义变更共享数据的方法, 也可用于定义一般的方法。
+
+    变更共享数据的三种方式:
+
+    + 通过`this.$store.state.全局数据名称`直接修改(不推荐)
+
+    + mutations方式
+
+        ```javascript
+        // 定义 Mutations
+        const store = new Vuex.Store({
+        	state: {
+         		count: 0
+         	},
+         	mutations: {
+         		add(state) {
+         			state.count++;
+        		},
+                //带参数方法(第一个固定是state)
+                addN(state, n) {
+                    state.count += n;
+                }
+        	}
+        })
+        
+        //在对应组件中, 通过this.$store.commit()调用mutations中定义的方法
+        methods: {
+        	handle1() {
+         		this.$store.commit('add');
+                //带参数版本
+                this.$store.commit('addN', 3);
+         	}
+        }
+        ```
+
+    + 把mutations的方法当作组件的一个方法
+
+        ```javascript
+        import { mapMutations } from 'vuex'
+        
+        //在组件的方法中添加mutations的方法
+        methods: {
+        	...mapMutations(['add', 'addN'])
+        }
+        ```
+
++ **actions:** mutations的方法如果是异步任务, 那么无法修改到共享数据的值, 异步任务需要放在actions中处理, 但是actions并不直接更改数据, 它还是调用了mutations中的方法。
+
+    actions可以用于定义变更共享数据的异步方法, 也可以定义一般的异步方法。
+
+    使用actions的两种方式:
+
+    + `this.$store.dispatch()`
+
+        ```javascript
+        // 定义 Actions
+        const store = new Vuex.Store({
+        	mutations: {
+         		addN(state, step) {
+         			state.count += step
+         		}
+         	},
+         	actions: {
+         		addNAsync(context, step) {
+         			setTimeout(() => {
+         				context.commit('addN', step)
+         			}, 1000)
+        	 	} 
+         	}
+        })
+        
+        // 在组件中通过this.$store.dispatch()调用actions的方法
+        methods: {
+        	handle() {
+         		this.$store.dispatch('addNAsync', 5)
+         	}
+        }
+        ```
+
+    + 把actions的方法注册到组件的methods中
+
+        ```javascript
+        import { mapActions } from 'vuex'
+        
+        methods: {
+        	...mapActions(['addASync', 'addNASync'])
+        }
+        ```
+
++ **getters:** getters 可以对共享数据进行加工处理形成新的数据(不会改变原数据的值)，类似 Vue 的计算属性。当共享数据发生变化时, getters中的数据也发生响应变化。
+
+    getters数据的两种使用方式:
+
+    + `this.$store.getters.名称`
+
+        ```javascript
+        // 定义 Getter
+        const store = new Vuex.Store({
+         	state: {
+         		count: 0
+         	},
+         	getters: {
+         		showNum: state => {
+         			return '当前最新的数量是【'+ state.count +'】'
+         		}
+         	}
+        })
+        
+        //在组件中可以直接通过this.$store.getters.名称引用
+        <h1>{{this.$store.getters.showNum}}</h1>
+        ```
+
+    + 将getters的数据当作组件的计算属性
+
+        ```javascript
+        import { mapGetters } from 'vuex'
+        
+        computed: {
+        	...mapGetters(['showNum'])
+        }
+        
+        //在组件中可以当作计算属性直接引用
+        <h1>{{showNum}}</h1>
+        ```
+
+        
