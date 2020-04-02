@@ -79,7 +79,7 @@
 
 + **生命周期:** 
 
-    ![](images/实例生命周期.png)
+    ![](http://q6tasy6mt.bkt.clouddn.com/实例生命周期.png)
 
 
 

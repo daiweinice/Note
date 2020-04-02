@@ -52,5 +52,6 @@
     如: props: {name: 'daiwei', age: 21}
 
     3. props为函数, 适用于前两者结合
-    如: props: route => ({name: 'daiwei', age: 21, id:route.params.id})
+    如: props: route => ({name: route.query.name, age: route.query.age, id:route.params.id})
+    对应的url: /user/:id?name=daiwei&age=21
  -->

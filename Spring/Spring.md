@@ -231,8 +231,8 @@ bean的作用范围通过`<bean>`标签的`scope`属性指定
 ##### (1) 注入数据的三种类型:
 
 + 基本类型和String类型
-+ 其它bean类
 + 复杂类型/集合类型
++ bean对象
 
 ##### (2) 注入的三种方式:
 
@@ -480,7 +480,7 @@ ApplicaionContext ac = AnnotationConfigApplicationContext(SpringConfig.class)
 
 ##### (2) 动态代理的作用
 
-不修改源码的情况下对方法进行增强
+==不修改源码的情况下对方法进行增强==
 
 ##### (3) 使用场景
 
@@ -646,8 +646,8 @@ public class Consumer{
 ##### (4) AOP术语
 
 + Joinpoint(连接点): 被代理对象的所有方法都是连接点
-+ Pointcut(切入点): 对哪些Joinpoint进行拦截的定义, 即需要被增强的方法是切入点
-+ Advice(通知): 拦截到Joinpoint后要做的事情, 即增强方法
++ ==Pointcut(切入点):== 对哪些Joinpoint进行拦截的定义, 即需要被增强的方法是切入点
++ ==Advice(通知):== 拦截到Joinpoint后要做的事情, 即增强方法
     + 前置通知: invoke原方法之前的部分
     + 后置通知: invoke原方法之后的部分
     + 异常通知: catch块里的部分
@@ -656,7 +656,7 @@ public class Consumer{
 + Target: 被代理对象
 + Weaving: 织入, 加入增强方法的过程
 + Proxy(代理): 方法增强后产生的代理类
-+ Aspect(切面): 切入点和通知的结合. 即通知与切入点的执行先后关系
++ ==Aspect(切面):== 切入点和通知的结合. 即通知与切入点的执行先后关系
 
 ##### (5) AOP开发步骤
 
@@ -1026,7 +1026,7 @@ Long count = template.queryForObject("select count(*) from user where age>?", In
 </beans>
 
 事务属性:
-* isolation：用于指定书屋的隔离级别，默认值为 DEFAULT，表示数据库的默认隔离级别
+* isolation：用于指定事务的隔离级别，默认值为 DEFAULT，表示数据库的默认隔离级别
 * propagation：用于指定事务的传播行为。默认值是REQUIRED，表示一定会有事务，增删改的选择。查询方法可以选择SUPPORTS。
 * read-only：用于指定事务是否只读。只有查询方法才能设置为true。默认值是false，表示读写。
 * timeout：用于指定事务的超时时间，默认值是-1，表示永不超时。如果指定了数值，以秒为单位。

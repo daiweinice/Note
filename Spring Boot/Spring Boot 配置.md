@@ -366,3 +366,4 @@ Spring Boot提供了许多@Conditional的派生注解
 
 + xxxAutoConfiguration.class 都是自动配置组件, 想知道一个依赖有哪些自动配置组件, 可以在该依赖的/META-INF/spring.factories文件中查看
 + XXXProperties.class 都是对相关配置文件的封装, 它们的属性就是我们可以在application配置文件中自己配置的
++ Spring Boot可配置项附录: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-application-properties.html

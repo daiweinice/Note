@@ -64,11 +64,11 @@
 </bean>
 
 <!--配置生产sqlSession的工厂, sqlSession是线程不安全的, 所以不能使用同一个sqlSession-->
-<bean id="factory" class="org.mybatis.spring.sqlSessionFactoryBean">
+<bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean">
     <property name="dataSource" ref="dataSource"></property>
     
     <!--给对应包下所有类起别名-->
-    <property name="typeAliasPackage" value="com.dw">
+    <property name="typeAliasesPackage" value="com.dw">
 </bean>
 
 <!--配置映射, 将所有Dao接口的代理对象加入到容器中-->
