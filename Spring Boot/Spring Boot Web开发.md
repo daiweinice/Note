@@ -2,17 +2,15 @@
 
 ## 一、基于Spring Boot的Web开发简介
 
-由于Spring Boot的自动配置功能, 我们进行Web开发已经无需进行各种繁琐的配置, 开发效率得到了很大的提高. Spring Boot底层通过Spring MVC实现对Web开发的支持, 使用Spring Boot进行Web开发大致分为三步:
+由于Spring Boot的自动配置功能, 我们进行Web开发已经无需进行各种繁琐的配置, 开发效率得到了很大的提高。Spring Boot底层通过Spring MVC实现对Web开发的支持, 使用Spring Boot进行Web开发大致分为三步:
 
 1. 创建Spring Boot项目, 选择需要使用到的场景启动器
 2. 根据项目需求在application.properties配置文件中进行少量配置
 3. 编写业务代码
 
-
-
 ## 二、静态资源映射规则
 
-在Spring Boot项目中, 是没有WebApp目录的, 对于静态资源的访问, Spring Boot配置了一套映射规则
+在Spring Boot项目中, 是没有WebApp目录的, 对于静态资源的访问, Spring Boot配置了一套映射规则。
 
 这些配置都在 `ResourcesProperties.class` 中
 
@@ -37,7 +35,7 @@ public class ResourceProperties implements ResourceLoaderAware {...}
 
 ![](images/webjars.png)
 
-通过 ==/webjars/**== 访问相关资源, 如: localhost:8080/webjars/jquery/3.3.1/jquery.js
+通过` /webjars/**` 访问相关资源, 如: `localhost:8080/webjars/jquery/3.3.1/jquery.js`
 
 2. **自己添加静态资源**
 
@@ -47,7 +45,7 @@ classpath:/static/
 classpath:/public/
 /
 
-以上5个路径都可以存放静态资源, 通过==/**==, 就可以自动映射到对应的静态资源, 不管它在上面5个路径中的哪一个. classpath: 指的就是 java/resources 目录
+以上5个路径都可以存放静态资源, 通过`/**`, 就可以自动映射到对应的静态资源, 不管它在上面5个路径中的哪一个。`classpath: `指的就是 `java/resources` 目录
 
 如: localhost:8080/jquery.js
 
@@ -60,8 +58,6 @@ classpath:/public/
 ```properties
 spring.resources.static-locations=[classpath:/css/, classpath:/js/]
 ```
-
-
 
 ## 三、模板引擎
 
@@ -346,13 +342,11 @@ public class MyMvcConfig implements WebMvcConfigurer{
 
 我们可以在自定义配置类中加上注解`@EnableWebMVC`使默认自动配置全部失效. 此时所有相关配置都需要我们自己完成.
 
-
-
 ## 五、国际化
 
 #### 1. 基础实现
 
-1. 编写国际化配置文件`login.properties`、`login_zh_CN.properties`、`login_en_US.properties`, 其中`login.properties`为默认配置文件. 需要注意配置IDEA解决中文乱码问题.
+1. 编写国际化配置文件`login.properties`、`login_zh_CN.properties`、`login_en_US.properties`, 其中`login.properties`为默认配置文件. ==需要注意配置IDEA解决中文乱码问题.==
 2. 设置基础名
 
 ```java
@@ -365,11 +359,11 @@ public class MessageSourceAutoConfiguration {
 通过源码我们可以发现, Spring Boot默认基础名为messages, 我们可以在配置文件中修改该基础名
 
 ```properties
-spring.messages.basename=i18n.login
 #其中i18n是存放国际化配置文件的文件夹的名称
+spring.messages.basename=i18n.login
 ```
 
-3. Spring Boot默认设置了AcceptHeaderLocaleResolver来获取区域信息, 所以默认是根据请求头来自己判断区域信息的, 我们无需配置.
+3. Spring Boot默认设置了`AcceptHeaderLocaleResolver`来获取区域信息, 所以默认是根据请求头来自己判断区域信息的, 我们无需配置.
 4. 通过Thymleaf模板引擎的`#{}`来使用国际化配置
 
 #### 2. 如何实现点击链接切换区域信息?
@@ -448,8 +442,6 @@ public class MyMvcConfig implements WebMvcConfigurer{
     }
 }
 ```
-
-
 
 ## 七、错误处理
 
@@ -575,8 +567,6 @@ public class MyErrorAttributes extends DefaultErrorAttributes {
 }
 ```
 
-
-
 ## 八、注册Servlet三大组件
 
 Spring Boot默认是以jar包的方式打包的, 所以没有web.xml文件, 所以想要注册Servlet、Listener、Filter三大组件, 需要通过`ServletRegistrationBean`、`FilterRegistrationBean`、`ServletListenerRegistrationBean`
@@ -692,7 +682,7 @@ Spring Boot内置了三种容器, 分别是:
 
 #### 4. 容器启动原理
 
-#### 5. 使用外置Servlet容器以支持jsp
+#### ~~5. 使用外置Servlet容器以支持jsp~~
 
 1. 创建项目时, 选择以war包方式打包
 2. 通过project structure添加webapp文件夹, 里面添加web.xml文件
@@ -716,7 +706,7 @@ Spring Boot内置了三种容器, 分别是:
 
 2. 必须编写一个`SpringBootServletInitializer`的子类，并调用configure方法
 
-```jav
+```java
 public class ServletInitializer extends SpringBootServletInitializer {
 
    @Override
@@ -727,8 +717,6 @@ public class ServletInitializer extends SpringBootServletInitializer {
 
 }
 ```
-
-
 
 ## X、其他细节问题
 

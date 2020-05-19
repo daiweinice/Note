@@ -4,8 +4,6 @@
 
 Spring Boot项目的resources目录下有一个`application.properties`或者`application.yml`文件, 它就是Spring Boot的全局配置文件, 用于修改自动配置的内容.
 
-
-
 ## 二、YAML
 
 #### 简介
@@ -59,13 +57,13 @@ user:
 	name: dw
 	age: 20
 
-从第二行开始表示user对象的属性, 同一缩进代表同一层级
+# 从第二行开始表示user对象的属性, 同一缩进代表同一层级
 ````
 
 ```yaml
 user: {name: dw,age: 20}
 
-单行写法
+# 单行写法
 ```
 
 7. 数组、List集合、Set集合写法
@@ -107,8 +105,6 @@ person.dog=${person.name:Tom}'s dog
 
 :Tom表示如果前面没有配置person.name的值, 就使用默认值Tom
 ```
-
-
 
 ## 三、读取配置文件
 
@@ -196,8 +192,6 @@ IDEA Settings -> Editor -> file Encoding -> 勾选 transparent native-to-ascii c
 | SpEL                 | 不支持                   | 支持       |
 | JSR303数据校验       | 支持                     | 不支持     |
 | 复杂类型封装         | 支持                     | 不支持     |
-
-
 
 ## 四、多配置文件
 

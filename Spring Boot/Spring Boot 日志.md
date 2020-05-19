@@ -74,17 +74,18 @@ Spring Boot已经为我们解决了这个问题.
 #### 1. 日志级别与默认配置
 
 ```java
-
+/*
+	这里的参数需要一个class对象, 任意的class对象都可以作为参数。
+	但是在日志打印时, 会带上对应的class, 如果准确填写class对象, 能够提供快速的日志定位。
+*/
 Logger logger = LoggerFactory.getLogger(getClass());
 
 public void contextLoads() {
-    
 	logger.trace("这是trace日志...");
 	logger.debug("这是debug日志...");
 	logger.info("这是info日志...");
 	logger.warn("这是warn日志...");
 	logger.error("这是error日志...");
-    
 }
 ```
 
@@ -101,6 +102,8 @@ public void contextLoads() {
 ```properties
 #设置日志输出级别, 这里加上了包名表示设置该包下的日志输出级别
 logging.level.com.dw=warn
+#设置全局输出级别
+logging.level.root=warn
 
 #设置日志输出文件名
 #不写完整路径表示输出在当前项目下, 文件名为设置值
@@ -108,7 +111,7 @@ logging.level.com.dw=warn
 logging.file=logging
 logging.file=S:/logging
 
-#设置日志输出目录
+#设置日志输出文件目录
 #记录日志的文件名固定为spring.log
 logging.path=/spring boot/log
 
@@ -178,3 +181,8 @@ logback-spring.xml
 </dependency>
 ```
 
+
+
+**参考:**
+
++ https://www.cnblogs.com/bigdataZJ/p/springboot-log.html

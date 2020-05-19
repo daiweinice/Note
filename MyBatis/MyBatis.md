@@ -2,7 +2,7 @@
 
 ## 一、MyBatis概述
 
-MyBatis是一个持久层框架, 用Java编写. 它封装了JDBC操作的很多细节, 使得开发者只需要关注sql语句本身, 而无需关注注册驱动, 创建连接等繁杂的过程.它使用了ORM思想, 实现了结果集的封装.
+MyBatis是一个持久层框架, 用Java编写. 它封装了JDBC操作的很多细节, 使得开发者只需要关注sql语句本身, 而无需关注注册驱动, 创建连接等繁杂的过程.==它使用了ORM思想, 实现了结果集的封装.==
 
 ORM思想: Object Relational Mapping, 对象关系映射. 简单说, 就是将数据库中的实体类和实体属性, 和Java对象映射起来, 将查询结果转化为Java对象.
 
@@ -251,7 +251,7 @@ MyBatis事务通过`<transactionManager>`标签的`type`属性指定事务类型
 
     <where>
         <if test="userName != null and userName !='ABC'">
-            and userName=#{userName}
+            userName=#{userName}
         </if>
     </where>
 </select>
@@ -379,7 +379,8 @@ MyBatis事务通过`<transactionManager>`标签的`type`属性指定事务类型
     <result property="money" column="money">
 
     <!--select指定延迟加载的方法, 这里是User的findById方法-->
-    <!--findById需要一个id参数, 这里的column就是指定这个参数, 表示数据库的uid属性作为参数来查询User-->
+    <!--findById需要一个id参数, 这里的column就是指定这个参数, 表示数据库的uid属性作为参数来查询User, 所以在延迟加载中column这个属性是必不可少的-->
+    <!-- 如果column需要传递多个参数, 可以使用colunm={a=xxx, b=xxx}的格式 -->
     <association property="user" column="uid" javaType="com.dw.bean.User" select="com.dw.UserDao.findById"><association>
 </resultMap>
 
@@ -428,13 +429,13 @@ sqlSession对象关闭后或者调用clearCache()方法后, 缓存清空.
 
 当调用sqlSession的修改、添加、删除、commit()等方法后, 缓存清空
 
-如果两次查询数据一致, 第二次通过sqlSession缓存获取到的数据对象与第一次查询获取的数据对象是同一个
+==如果两次查询数据一致, 第二次通过sqlSession缓存获取到的数据对象与第一次查询获取的数据对象是同一个==
 
 #### 3. 二级缓存
 
 sqlSessionFactory对象缓存, 由同一个sqlSessionFactory对象创建的sqlSession共享该缓存.
 
-当两次查询数据一致, 并通过二级缓存获取数据时, 第二次获取的数据对象和第一次不同
+==当两次查询数据一致, 并通过二级缓存获取数据时, 第二次获取的数据对象和第一次不同==
 
 #### 4. 使用二级缓存
 
@@ -466,7 +467,7 @@ sqlSessionFactory对象缓存, 由同一个sqlSessionFactory对象创建的sqlSe
 
 #### 1. 环境搭建
 
-环境搭建还是需要主配置文件, 注解开发可以替代映射配置文件, 主配置文件的`<mapper>`中的`<mapper>`>, 使用class属性来完成映射, 也可以通过`<mapper>`完成映射
+环境搭建还是需要主配置文件, 注解开发可以替代映射配置文件, 主配置文件的`<mappers>`中的`<mapper>`, 使用class属性来完成映射, 也可以通过`<package>`完成映射
 
 #### 2. CRUD操作
 
@@ -503,7 +504,7 @@ public void addUser(@Param("userId") String uId, @Param("roleId") String rId)
 @Results(id="userMap", value={
     @Result(id=true, column="id", property="userId")
     @Result(column="name", property="userName")
-    @Result(property="user", clumn="uid", one=@One(select="com.dw.UserDao.findById", fetchType=FetchType.LAZY))
+    @Result(property="user", column="uid", one=@One(select="com.dw.UserDao.findById", fetchType=FetchType.LAZY))
 })
 
 fetchType.LAZY: 延迟加载

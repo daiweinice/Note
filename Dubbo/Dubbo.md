@@ -54,7 +54,7 @@ http使用没有任何问题，首先业务简单，系统之间的交互不是�
 
 Dubbo设计架构采用了订阅发布模式.
 
-![](images/Dubbo 设计架构.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Dubbo设计架构.png)
 
 ## 二、Dubbo快速启动
 
@@ -75,70 +75,72 @@ Dubbo设计架构采用了订阅发布模式.
 ### 3. 创建服务提供者
 
 1. 导入相关jar包`dubbo.jar`、`curator-framwork.jar`. 其中`curator`是用于操作zookeeper的客户端
-
 2. 定义服务接口
 
-    ```java
-    package org.apache.dubbo.demo;
-    
-    public interface DemoService {
-        String sayHello(String name);
-    }
-    ```
+```java
+package org.apache.dubbo.demo;
+
+public interface DemoService {
+    String sayHello(String name);
+}
+```
 
 3. 服务端实现该接口
 
-    ```java
-    package org.apache.dubbo.demo.provider;
-     
-    import org.apache.dubbo.demo.DemoService;
-     
-    public class DemoServiceImpl implements DemoService {
-        public String sayHello(String name) {
-            return "Hello " + name;
-        }
+```java
+package org.apache.dubbo.demo.provider;
+ 
+import org.apache.dubbo.demo.DemoService;
+ 
+public class DemoServiceImpl implements DemoService {
+    public String sayHello(String name) {
+        return "Hello " + name;
     }
-    ```
+}
+```
 
 4. 用spring配置暴露该服务(添加到注册中心)
 
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd        http://dubbo.apache.org/schema/dubbo        http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
-     
-        <!-- 指定当前服务/应用的名字 -->
-        <dubbo:application name="hello-world-app"  />
-     
-        <!-- 指定注册中心的地址 -->
-        <dubbo:registry address="zookeeper://127.0.0.1:2181" />
-     
-        <!-- 指定消费者和服务者的通信规则(协议和端口号) -->
-        <dubbo:protocol name="dubbo" port="20880" />
-     
-        <!-- 声明需要暴露的服务接口 -->
-        <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" />
-     
-        <!-- 和本地bean一样实现服务 -->
-        <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl" />
-    </beans>
-    ```
+```xml
+<?xml version="1.0" encoding="UTF-8">
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+    http://dubbo.apache.org/schema/dubbo
+   	http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+ 
+    <!-- 指定当前服务/应用的名字 -->
+    <dubbo:application name="hello-world-app"  />
+ 
+    <!-- 指定注册中心的地址 -->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" />
+ 
+    <!-- 指定消费者和服务者的通信规则(协议和端口号) -->
+    <dubbo:protocol name="dubbo" port="20880" />
+ 
+    <!-- 声明需要暴露的服务接口 -->
+    <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService" />
+ 
+    <!-- 和本地bean一样实现服务 -->
+    <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl" />
+</beans>
+```
 
 5. 加载spring配置
 
-    ```java
-    import org.springframework.context.support.ClassPathXmlApplicationContext;
-     
-    public class Provider {
-        public static void main(String[] args) throws Exception {
-            ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"http://10.20.160.198/wiki/display/dubbo/provider.xml"});
-            context.start();
-            System.in.read(); // 按任意键退出, 防止容器关闭
-        }
+```java
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+ 
+public class Provider {
+    public static void main(String[] args) throws Exception {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"http://10.20.160.198/wiki/display/dubbo/provider.xml"});
+        context.start();
+        System.in.read(); // 按任意键退出, 防止容器关闭
     }
-    ```
+}
+```
 
 
 
@@ -147,42 +149,45 @@ Dubbo设计架构采用了订阅发布模式.
 
 1. 进行spring配置
 
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd        http://dubbo.apache.org/schema/dubbo        http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
-     
-        <!-- 消费方应用名，用于计算依赖关系，不是匹配条件，不要与提供方一样 -->
-        <dubbo:application name="consumer-of-helloworld-app"  />
-     
-        <!-- 注册中心地址 -->
-        <dubbo:registry address="zookeeper://127.0.0.1:2181" />
-     
-        <!-- 生成远程服务代理，可以和本地bean一样使用demoService -->
-        <dubbo:reference id="demoService" interface="org.apache.dubbo.demo.DemoService" />
-    </beans>
-    ```
+```xml
+<?xml version="1.0" encoding="UTF-8">
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans-4.3.xsd 
+    http://dubbo.apache.org/schema/dubbo
+ 	http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+ 
+    <!-- 消费方应用名，用于计算依赖关系，不是匹配条件，不要与提供方一样 -->
+    <dubbo:application name="consumer-of-helloworld-app"  />
+ 
+    <!-- 注册中心地址 -->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" />
+ 
+    <!-- 生成远程服务代理，可以和本地bean一样使用demoService -->
+    <dubbo:reference id="demoService" interface="org.apache.dubbo.demo.DemoService" />
+</beans>
+```
 
 2. 调用远程接口
 
-    ```java
-    import org.springframework.context.support.ClassPathXmlApplicationContext;
-    import org.apache.dubbo.demo.DemoService;
-     
-    public class Consumer {
-        public static void main(String[] args) throws Exception {
-            ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"http://10.20.160.198/wiki/display/dubbo/consumer.xml"});
-            context.start();
-            DemoService demoService = (DemoService)context.getBean("demoService"); // 获取远程服务代理
-            String hello = demoService.sayHello("world"); // 执行远程方法
-            System.out.println( hello ); // 显示调用结果
-        }
+```java
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.dubbo.demo.DemoService;
+ 
+public class Consumer {
+    public static void main(String[] args) throws Exception {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"http://10.20.160.198/wiki/display/dubbo/consumer.xml"});
+        context.start();
+        DemoService demoService = (DemoService)context.getBean("demoService"); // 获取远程服务代理
+        String hello = demoService.sayHello("world"); // 执行远程方法
+        System.out.println( hello ); // 显示调用结果
     }
-    ```
+}
+```
 
-    
+
 
 ### 5. 注意事项
 
@@ -244,7 +249,7 @@ Dubbo有三种配置方式, 其中按优先级配置应该是
 <dubbo:consumer check="false" />
 ```
 
-配置注册中心未启动时, 服务端正常启动
+1. 配置注册中心未启动时, 服务端正常启动
 
 ```xml
 <dubbo:registry check="false" />
@@ -265,7 +270,7 @@ Dubbo有三种配置方式, 其中按优先级配置应该是
 - 方法级优先，接口级次之，全局配置再次之。
 - 如果级别一样，则消费方优先，提供方次之。
 
-![](images\Dubbo 不同粒度配置优先级.jpg)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Dubbo不同粒度配置优先级.jpg)
 
 
 
@@ -303,7 +308,7 @@ Dubbo有三种配置方式, 其中按优先级配置应该是
 
 远程服务后，客户端通常只剩下接口，而实现全在服务器端，但提供方有些时候想在客户端也执行部分逻辑，比如：做 ThreadLocal 缓存，提前验证参数，调用失败后伪造容错数据等等，此时就需要在 API 中带上 Stub，客户端生成 Proxy 实例，会把 Proxy 通过构造函数传给 Stub，然后把 Stub 暴露给用户，Stub 可以决定要不要去调 Proxy。
 
-![](images\本地存根.jpg)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/本地存根.jpg)
 
 在 spring 配置文件中按以下方式配置：
 

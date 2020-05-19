@@ -258,7 +258,7 @@ bean的作用范围通过`<bean>`标签的`scope`属性指定
 
 2. set方法注入
 
-```java
+```xml
 /*
     <bean>标签内部有一个<property>标签, 其有三个属性:
     1. name: 需要调用哪个setXxx方法, name的值就是Xxx第一个字母小写后的值, 即xxx
@@ -283,13 +283,20 @@ bean的作用范围通过`<bean>`标签的`scope`属性指定
         <value>BBB</value>
     </list>
 </property>
+<property name="myList">
+	<list>
+		<Bean />
+		<Bean />
+	</list>
+</property>
 
 //注意: <map>和<props>也可以相互兼容, 用<psops>给map集合赋值, 也是可以的
 <property name="myMap">
     <map>
         <entry key="1" value="AAA"></entry>
         <entry key="2"> <value>BBB</value> </entry>
-    <map>
+    	<!--<entry key="3"> <Bean></Bean> </entry>-->
+    </map>
 </property>
 <property name="myProp">
     <props name="myProps">
@@ -816,6 +823,7 @@ public class Log{
     @Pointcut("execution(* com.dw.service.*.*(..))")
     private void pointcutConfig(){}
 
+    //@AfterReturning、@AfterThrowing
     @Before("pointcutConfig()")
     //或者直接配置切入点 @Before("execution(* com.dw.service.*.*(..))")
     public void printLog(){
@@ -960,7 +968,7 @@ Long count = template.queryForObject("select count(*) from user where age>?", In
 + Spring内置了一套事务控制的API和配置方法.
 + 使用Spring的事务控制需要导入jar包spring-tx.
 + Spring的事务控制是基于AOP的, 它既可以使用编程的方式实现, 也可以使用配置的方式实现.
-+ 在JavaEE中, 事务控制位于业务层(Service), 而不是持久层(Dao)
++ ==在JavaEE中, 事务控制位于业务层(Service), 而不是持久层(Dao)==
 
 ##### (2) 相关API
 
@@ -1039,7 +1047,7 @@ Long count = template.queryForObject("select count(*) from user where age>?", In
 ```xml
 1. 配置事务管理器Datasource和TransactionManager的<bean>
 2. 开启注解事务支持 
-   <tx:annotation-driven teansaction-manager="transactionManager"></tx:annotation-driven>
+   <tx:annotation-driven teansaction-manager="transactionManager"></tx:annotation-driven>  /  或者 在配置类上注解@EnableTransactionManagement
 3. 在需要使用事务控制的方法上(应该是Service的方法而不是Dao的方法, 因为事务控制是位于业务层的)加上注解@Transactional(), 注解里可以配置相关属性. 该注解可以作用在方法上也可以作用在类上, 注解在类上, 表示对所有方法进行事务控制
 ```
 

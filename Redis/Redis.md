@@ -89,7 +89,7 @@
 
 #### 3.Redis介绍
 
-> Redis是一个开源的使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、Key-Value型数据库. 它的查询速度非常的快, 据官方提供的测试数据，50个并发执行100000个请求,读的速度是110000次/s,写的速度是81000次/s. 它还提供了多种键值数据类型来适应不同场景下的存储需求, 这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作, 且这些操作都是原子性的.
+> Redis是一个开源的使用ANSI C语言编写、支持网络、可基于内存亦可持久化的日志型、Key-Value型数据库. 它的查询速度非常的快, 据官方提供的测试数据，50个并发执行100000个请求,读的速度是110000次/s,写的速度是81000次/s. 它还提供了多种键值数据类型来适应不同场景下的存储需求, 这些数据类型都支持push/pop、add/remove及取交集并集和差集及更丰富的操作, 且这些操作都是==原子性==的.
 
 **Redis支持的键值数据类型**
 
@@ -106,7 +106,7 @@
 + 排行榜 ---- 利用zset
 + 时效性数据 如手机验证码 ---- 数据时效性
 + 计数器 --- 自增方法INCR、DECR
-+ 秒杀 ---- 利用Redis事务
++ ~~秒杀 ---- 利用Redis事务~~
 + 去除大量数据中的重复数据 ---- 利用set集合
 + 构建队列 ---- 利用list
 + 发布订阅消息系统 ---- pub/sub模式
@@ -222,7 +222,7 @@ Redis-desktop-manager是一款Redis可视化客户端.
 
 > Spring-data-redis是spring大家族的一部分. 它提供了在spring应用中通过简单的配置访问Redis服务, 对Redis底层开发包(Jedis、JRedis、RJC)进行了高度的封装, RedisTemplate提供了各种Redis操作、异常化处理及序列化, 支持发布订阅, 并对spring 3.1 cache进行了实现.
 
-**Spring-data-redis主要功能**
+**spring-data-redis主要功能**
 
 1. 连接池自动管理, 提供了一个高度封装的`RedisTemplate`类
 2. 针对Jedis中大量api进行了归类封装, 将同一类型操作封装为operation接口. 它们分别是`ValueOperations`、`SetOperations`、`ZSetOperations`、`HashOperations`、`ListOperations`
@@ -320,8 +320,6 @@ redisTemplate.opsForValue().increment(key, increment);
 redisTemplate.opsForValue().set(key, value, offset);
 ```
 
-
-
 2. **Hash类型**
 
 ```java
@@ -362,8 +360,6 @@ redisTemplate.opsForHash().size(key);
 //value增加increment并返回, 参数可以是Double也可以是Long
 redisTemplate.opsForHash().increment(key, field, increment);
 ```
-
-
 
 3. **List类型**
 
@@ -409,8 +405,6 @@ redisTemplate.opsForList().set(key, index, value);
 redisTemplate.opsForList().trim(key, start, end);
 ```
 
-
-
 4. **set方法**
 
 ```java
@@ -452,8 +446,6 @@ redisTemplate.opsForSet().size(key);
 //判断是否存在
 redisTemplate.opsForSet().isMember(key, value);
 ```
-
-
 
 5. **ZSet类型**
 
@@ -497,8 +489,6 @@ redisTemplate.opsForZSet().score(key, value)
 //集合大小
 redisTemplate.opsForZSet().size(key)
 ```
-
-
 
 6. **通用**
 
@@ -549,8 +539,6 @@ redisTemplate.persist(key);
 
 
 
-
-
 ## 四、Redis持久化
 
 Redis是一种内存数据库, 当服务关闭后,  里面的数据就会清空, Redis提供了持久化的方案, 可以将数据保存在硬盘里。
@@ -587,9 +575,11 @@ Redis是一种内存数据库, 当服务关闭后,  里面的数据就会清空,
 
 #### 1. Redis事务介绍
 
-Redis是单线程的, 它以队列的方式依次执行命令. 先来的命令先执行, 后来的命令后执行. 这就导致了当多个客户端对同一个Redis发出命令时, 由于到达时间的不确定性, 导致结果的不确定性.
+==Redis是单线程的==, 它以队列的方式依次执行命令. 先来的命令先执行, 后来的命令后执行. 这就导致了当多个客户端对同一个Redis发出命令时, 由于到达时间的不确定性, 导致结果的不确定性.
 
 Redis事务的作用就是串联多个命令, 防止别的命令插队. Redis事务是一个单独的隔离操作, 事务中所有的命令都会构成一个"子队列", 这些命令按顺序执行, 在事务的执行过程中, 不会被其他客户端发送的命令打断.
+
+
 
 #### 2. 实现:
 
@@ -599,12 +589,18 @@ Redis事务通过三个命令完成.
 2. Exec: 输入Exec命令后进入执行阶段, 子队列中的命令才会依次执行.
 3. discard: 在Multi命令后, 可以通过discard命令放弃组队.
 
+**Spring Boot实现Redis事务:** https://www.jianshu.com/p/d353dd7eb0cf
+
+
+
 #### 3. 事务中的错误处理
 
 1. 在组队过程中, 输入了错误的命令, 整个子队列都会取消
 2. 在Exec命令后, 子队列中的命令依次执行, 此时命令发生错误会报错, 但不会影响其他命令, 其他命令会正常执行. 
 
-综上所述: 事务的错误处理在组队阶段具有原子性, 在执行阶段没有原子性
+综上所述: ==事务的错误处理在组队阶段具有原子性, 在执行阶段没有原子性==
+
+
 
 #### 4. 乐观锁和悲观锁
 
@@ -622,7 +618,7 @@ Redis事务通过三个命令完成.
 
 Redis采用了乐观锁的办法避免事务冲突, 它与悲观锁相比能提高系统吞吐量.
 
-Redis通过命令 `watch key1 [key2]`来实现对key的监听, ==监听的key在组队阶段如果有其他客户端命令对该key进行了操作,那么事务会被中断, 命令不会被执行.==
+Redis通过命令 `watch key1 [key2]`来实现对key的监听, 监听的key在组队阶段如果有其他客户端命令对该key进行了操作,那么事务会被中断, 命令不会被执行.
 
 可以通过`unwatch`命令取消对所有key的监听, 在`Exec`或`discard`命令后, 会自动取消对应key的监听.
 
@@ -647,7 +643,7 @@ Redis通过命令 `watch key1 [key2]`来实现对key的监听, ==监听的key在
 | 命令                                         | 描述                             |
 | -------------------------------------------- | -------------------------------- |
 | SUBSCRIBE channel [channel]                  | 订阅指定的一个或多个频道的信息   |
-| PSUBSCRIBE pattern [pattern]                 | 订阅一个或多个符合给定模式的频道 |
+| PSUBSCRIBE pattern [channel]                 | 订阅一个或多个符合给定模式的频道 |
 | PUBLISH channel message                      | 将信息发送到指定的频道           |
 | UNSUBSCRIBE channel [channel]                | 退订指定的频道                   |
 | PUNSUBSCRIBE pattern [pattern]               | 退订所有给定模式的频道           |
@@ -655,9 +651,11 @@ Redis通过命令 `watch key1 [key2]`来实现对key的监听, ==监听的key在
 
 
 
-#### 4. Java中的Redis发布和订阅
+#### 3. Java中的Redis发布和订阅
 
 Jedis提供了使用Java实现Redis发布和订阅的功能, 订阅者在收到发布者的消息后会调用回调方法, 这个回调方法就可以执行相关的操作. 所以可以使用发布和订阅功能实现不同应用程序之间的通信, 比如mysql和检索数据库之间的数据同步.(消息中间件).
+
+**Spring Boot实现发布订阅:** https://www.jianshu.com/p/1aa4484f81f3
 
 
 
@@ -692,7 +690,7 @@ Jedis提供了使用Java实现Redis发布和订阅的功能, 订阅者在收到�
 1. master可以读和写, 但是slaver只能读
 2. slaver加入后会复制master之前的所有数据, 而不是只复制加入后新增的数据
 3. 主机关闭后, 从机不会立即变成主机. 主机重启后, master/slaver关系仍存在
-4. 从机关闭后, 重启后会变成master, 需要再次设置. 也可以直接在配置文件中配置`slaveof ip port` , 这样从机重启后会自动变成slaver
+4. 从机关闭后, 重启后会变成master, 需要再次设置才能变成slaver. 也可以直接在配置文件中配置`slaveof ip port` , 这样从机重启后会自动变成slaver
 5. 一个slaver也可以有它的slaver, 不过该slaver也仍然是一个slaver, 不能进行写操作. 不过它的存在可以减轻master的压力.
 
 
@@ -714,7 +712,7 @@ Jedis提供了使用Java实现Redis发布和订阅的功能, 订阅者在收到�
 2. 在srntinel.conf中填写`sentinel monitor mymaster ip port 1`, 用来监听master, 最后一个数字表示当有多少个从机检测到master无法连接, 就取代它的位置
 3. 执行命令`redis-sentinel ../sentinel.conf`
 
-当开启了哨兵模式后, master被shutdown后, 会有其slaver成为master, 当master重连后, 它会变成一个slaver. 
+当开启了哨兵模式后, master被shutdown后, 会有其slaver成为master, **当master重连后, 它会变成一个slaver**. 
 
 至于slaver中谁可以成为master, 取决于配置文件中`slave-priority 100` 对slaver的优先级设置, 数字越小, 优先级越高. 0表示无法成为master.
 
@@ -766,7 +764,7 @@ Jedis提供了使用Java实现Redis发布和订阅的功能, 订阅者在收到�
 
 
 
-## X. Redis案例
+## 九. Redis案例
 
 #### 1. 验证码案例
 
@@ -774,9 +772,11 @@ Jedis提供了使用Java实现Redis发布和订阅的功能, 订阅者在收到�
 
 key的命名: pnumber.count记录一天发送个数、pnumber.code记录验证码
 
-key的设计非常重要
+由此可见, key的名字设计非常重要
 
-#### 2. 秒杀案例
+
+
+#### ~~2. 秒杀案例~~
 
 1. 将商品数量减少的操作加入事务, 对商品数量的key开启监听, 这样商品数量的减少就会使用乐观锁, 多个并发操作只有一个能使商品数量-1. 其他操作无效, 解决了超卖问题.
 2. 但是这个有一个问题, 许多的并发操作只有一个成功, 其他都无效, 会造成库存堆积, 应该使用Lua脚本优化?

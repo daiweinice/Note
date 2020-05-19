@@ -31,7 +31,7 @@
 + 共同点
     + 它们都是表现层框架，都是基于MVC模型编写的。
     + 它们的底层都离不开原始ServletAPI。
-    + 它们处理请求的机制都是一个核心控制器。
+    + 它们处理请求的机制都是一个==核心控制器==。
 + 不同点:
     + Spring MVC 的入口是 Servlet, 而 Struts2 是 Filter
     + Spring MVC 是基于方法设计的，而Struts2是基于类，Struts2每次执行都会创建一个动作类。所以Spring MVC 会稍微比 Struts2 快些。
@@ -147,7 +147,7 @@ index.jsp
 + 视图解析器: ViewResolver负责将处理结果生成View视图，ViewResolver首先根据逻辑视图名解析成物理视图名即具体的页面地址，再生成View视图对象，最后对View进行渲染将处理结果通过页面展示给用户。
 + 视图: SpringMVC框架提供了很多的View视图类型的支持，包括：jstlView、freemarkerView、pdfView等。我们最常用的视图就是jsp。一般情况下需要通过页面标签或页面模版技术将模型数据通过页面展示给用户，需要由程序员根据业务需求开发具体的页面。
 
-其中, 处理器映射器、处理器适配器在配置了`<mvc:annotation-driven>`后会自动加载
+==其中, 处理器映射器、处理器适配器在配置了`<mvc:annotation-driven>`后会自动加载==
 
 
 
@@ -253,7 +253,7 @@ post请求传递参数会出现中文乱码的问题, 这时候需要通过Filte
 </filter-mapping>
 
 <!--在springmvc的配置文件中可以配置静态资源不过滤, 否则js、css等资源都无法正常加载-->
-<!-- location表示url路径, 这些路径配置后都不会被拦截，mapping表示文件路径，**表示该目录下的文件以及子目录的文件 -->
+<!-- mapping为url, location为对应文件夹的静态资源 -->
 <mvc:resources location="/css/" mapping="/css/**"/>
 <mvc:resources location="/images/" mapping="/images/**"/>
 <mvc:resources location="/scripts/" mapping="/javascript/**"/>
@@ -342,12 +342,13 @@ post请求传递参数会出现中文乱码的问题, 这时候需要通过Filte
 
 #### 8. @ModelAttribute
 
-+ 作用: 该注解是SpringMVC4.3版本以后新加入的。它可以用于修饰方法和参数。出现在方法上，表示当前方法会在控制器的方法执行之前，先执行。它可以修饰没有返回值的方法，也可以修饰有具体返回值的方法。出现在参数上，获取指定的数据给参数赋值。
++ 作用: 该注解是SpringMVC4.3版本以后新加入的。它可以用于修饰方法和参数。==出现在方法上，表示当前方法会在控制器的方法执行之前，先执行。==它可以修饰没有返回值的方法，也可以修饰有具体返回值的方法。出现在参数上，获取指定的数据给参数赋值。
 
 + 用法:
 
     ```java
     //1. 有返回值
+    //这个pre_get方法就会先执行, 然后将返回值作为参数传递给get方法
     @RequestMapping("/get")
     public String get(User user){
        ...
@@ -361,8 +362,6 @@ post请求传递参数会出现中文乱码的问题, 这时候需要通过Filte
         u.setDate(new Date())
         return u;
     }
-    
-    //这个pre_get方法就会先执行, 然后将返回值作为参数传递给get方法
     
     //2. 无返回值, 作用于参数
     @RequestMapping("/get")
@@ -412,6 +411,12 @@ public ModelAndView find(){
 
     return mv;
 }
+
+// ModelAndView也支持返回josn字符串
+// 下面的代码将返回一个json字符串{"key":"daiwei"}
+ModelAndView modelAndView = new ModelAndView(new MappingJackson2JsonView());
+modelAndView.addObject("key", "daiwei");
+return modelAndView;
 ```
 
 #### 4. @ResponseBody+封装对象 实现响应json数据
@@ -592,7 +597,7 @@ public class MyInterceptor implements HandlerInterceptor{
 
     //后处理方法, 指处理器方法执行后, 响应内容经过拦截器时执行的方法
     //该方法返回值是void, 如果处理器方法中return "success", 但在这个方法中直接跳转到其他页面, 最终结果是跳转到了其他页面, 但是还是会执行success.jsp的java代码
-    public void postHandler(...){}
+    public void postHandle(...){}
 
     //跳转到success.jsp后执行的方法
     //该方法里面跳转其他页面无效

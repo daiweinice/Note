@@ -124,7 +124,7 @@ public User findUserById(Integer id){
 
 5. **@CacheConfig**
 
-```
+```java
 @CacheConfig(cacheNames="", keyGenerator="", cacheManager="")
 public class UserService{
 	...
@@ -142,7 +142,7 @@ public class UserService{
 #### 1.实现步骤
 
 1. 导入相关依赖`spring-boot-starter-data-redis`
-    导入依赖后, CacheManager由默认变成RedisCacheManager
+    ==导入依赖后, CacheManager由默认变成RedisCacheManager==
     默认Cache变成RedisCache, RedisCache通过操作redis来缓存数据
 2. 配置Redis
 
@@ -189,5 +189,7 @@ public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFact
 }
 ```
 
+## X. 其他
 
++ Spring默认缓存无法设置过期时间?(未确定), 但是集成Redis后可以设置过期时间。
 
