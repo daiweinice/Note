@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flex</title>
+  <style>
+    main {
+      width: 80vw;
+      margin: auto;
+      background-color: pink;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+    }
+    section{
+      width: 40%; /*宽度用百分比可以实现伸缩*/
+      height: 200px; /*高度用px即可*/
+      margin: 30px;
+      background-color: aquamarine;
+      border: 1px solid red;
+      color: black;
+      font-size: 50px;;
+      font-weight: 800;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>1</section>
+    <section>2</section>
+    <section>3</section>
+    <section>4</section>
+    <section>5</section>
+    <section>6</section>
+    <section>7</section>
+    <section>8</section>
+    <section>9</section>  <!--Flex布局有一个局限性, 最后一行如果列数不够的话, 元素不能左对齐。-->
+  </main>
+</body>
+</html>

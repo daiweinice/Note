@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>红心点赞</title>
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_1709767_d9crkw7octl.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    main {
+      width: 500px;
+      height: 500px;
+      border: 2px solid red;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    i.iconfont {
+      font-size: 5em;
+      position: absolute;
+      transition: 0.5s;
+    }
+
+    i.iconfont:first-child {
+      color: red;
+    }
+
+    i.iconfont:last-child {
+      color: red;
+      opacity: 0;
+    }
+
+    /*
+      如果使用 i.iconfont:first-child:hover{}和 i.iconfont:last-child:hover{}
+      由于两个图标是绝对定位, 它们是重合在一起的, 只有最上层的图标会触发hover
+      如果需要两个图标都有hover触发, 则应该把它们放在一个div里, 通过该div的hover来同时触发两个动画
+    */
+    main:hover i.iconfont:first-child {
+      transform: scale(2);
+      opacity: 0;
+    }
+
+    main:hover i.iconfont:last-child {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <i class="iconfont icon-xin"></i>
+    <i class="iconfont icon-xin2"></i>
+  </main>
+</body>
+
+</html>

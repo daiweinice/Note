@@ -145,7 +145,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
 + `exit` : 停止容器并退出(在linux容器中才行, 相当于在容器中执行exit将其关闭)
 + `ctrl+P+Q` : 不停止退出容器
 + `docker attach 容器ID/容器名` : 进入正在运行的容器并以命令行的方式交互
-+ `docker exec -it 容器ID/容器名 shell代码` : 在容器中执行指定shell, 但是不会以交互形式进入容器(如果是bin/bash命令则会进入)
++ `docker exec -it 容器ID/容器名 shell代码` : 在容器中执行指定shell, 但是不会以交互形式进入容器(**如果是bin或bash命令则会进入**)
 + `docker start 容器名/容器ID`  : 启动容器
 + `docker restart 容器名/容器ID` : 重启容器
 + `docker stop 容器名/容器ID` : 停止容器
@@ -299,7 +299,126 @@ dockerfile是用来构建镜像的构建文件. 由一系列命令和参数构�
 
 ## 六、Docker网络
 
+### 1. 端口映射
+
 ![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Docker网络端口.png)
+
+### 2. 理解Docker0
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/docker0.png)
+
+只要安装了Doker, 就会创建一个网卡docker0。Docker网路采用的是桥接模式, 使用的技术是evth-pair技术。
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/linux ping 容器.png)
+
+在容器内可以通过`ip addr`查看到容器的内部网络地址, 且我们的的**外部Linux可以通过容器的ip地址ping通容器内部**。
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/每多创建一个容器就多一个网卡.png)
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/每多创建一个容器就多一个网卡1.png)
+
+同时我们每创建一个容器, 就会多创建**一对**网卡。可以看到这些网卡的名字是有规律的, 261-261、263-264... 这其实就是evth-pair技术。evth-pair就是一对虚拟设备接口, 一端连着协议, 一端彼此相连。正是因为有了这个特性, evth-pari充当一个桥梁, 连接各种虚拟网络设备。 **所以, 容器内部是可以通过另一个容器的ip地址ping通另一个容器的。**不过, **容器之间能连接并不是直接相连, 而是通过docker0来进行连接的**, 如下图所示。docker0在这里就相当于一个路由器。docker0就是一个网段, 如255.255.0.1/16, 我们的容器创建默认就是在这个网段内, docker0会为他们分配一个ip地址, 并实现同一网段的各容器之间的互通。
+
+我们可以通过`docker network inspect xxx`来查看docker网络的具体信息。
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/evth-pair技术.png)
+
+### 3. --link
+
+每次启动一个容器, docker就会为其分配一个ip地址, 但是这个ip地址不是固定的, 重新启动后, ip地址可能会变, 所以在实际中, 我们希望通过容器名而不是ip来实现容器的连通, `--link`就是一个方式。
+
+示例:
+
+启动tomcat01后, 通过`docker run -d -p --name tomcat02 --link tomcat01 tomcat`来创建容器tomcat02, 此后我们在tomcat02内部就可以通过`ping tomcat01`来ping通tomcat01容器。但是, 反向还是不能ping通。
+
+--link的本质就是修改了容器内的hosts文件, 将tomcat01对应到了tomcat01的ip。
+
+--link存在很多局限性, 真实开发中不推荐使用。
+
+### 4. 自定义网络(容器互联)
+
+`doker network ls`查看当前docker网络
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/docker network ls.png)
+
+**网路模式**
+
+1. bridge(桥接, 推荐)
+2. none(不配置)
+3. host(和宿主机共享网络)
+4. container(容器网络联通, 局限性大)
+
+我们可以通过`docker network create --driver bridge --subnet 192.168.0.0/16 --gateway 192.168.0.1 mynet`创建一个自己的网络(类似于docker0)
+
+创建容器时, 通过`docker run -d -p --name tomcat01 --net mynet tomcat`将容器加入到自定义的网络中。其中`--net`不指定时就是默认值bridge, 即我们的docker0。
+
+**docker0中容器之间不能通过容器名ping通。但是在自定义网络中, docker为我们维护好了对应的网络关系, 容器之间都可以通过容器名ping通。**
+
+### 5. 不同网络容器连通
+
+其他网络的容器想要和本网络的容器连通, 需要将该容器和本网络进行连接。通过`docker network connect 网络名 容器名`进行连接。
+
+
+
+## 七、Docker Compose
+
+### 1. 为什么需要Docker Compose
+
+之前我们运行一个容器, 往往需要添加大量的参数。现在我们可以通过Docker Compose编写这些参数, 同时使用Docker Compose批量管理容器, 而要实现这些, 只需要通过一个docker-compose.yml配置文件即可。
+
+### 2. Docker Compose安装
+
++ github下载Docker Compose到Linux `docker-compose-linux-x86_64`, 该文件是一个可执行文件
++ 修改文件名字为docker-compose (方便后续操作)
++ 给docker-compose文件添加可执行权限 `chmod 777 docker-compose`
++ 为了在任意路径使用docker-compose, 可以将docker-compose移动到`/usr/local/bin`目录下, 并将该目录添加到环境变量的PATH中。此后就可以在任意路径使用docker-compose命令
+
+### 3. Docker Compose案例
+
+```yml
+# docker-compose.yml
+sersion: '3.1'
+services: 
+	mysql:        # 服务名称
+		restart: always  # Docker启动就自动启动容器
+		image: xxx    # 镜像地址
+		container_name: mysql # 容器名称
+		ports:
+			- 3306:3306
+		environment: 
+			MYSQL_ROOT_PASSWORD: 123456
+			TZ: Asia/Shanghai
+		volumes:
+			- /xxx/xxx:/xxx/xxx
+```
+
+通过`docker-compose up -d`即可运行配置的容器。(docker-compose默认会以当前目录的docker-compose.yml为配置文件)
+
+docker-compose详解: https://www.jianshu.com/p/658911a8cff3
+
+### 4. Docker Compose + Dockerfile
+
+```yml
+# docker-compose.yml
+sersion: '3.1'
+services: 
+	mysql:        # 服务名称
+		restart: always  # Docker启动就自动启动容器
+		build: 
+			context: ../  # dockerfile文件的路径
+			dockerfile: dockerfile # dockerfile文件名
+		image: xxx    # 此时image表示的就是构建的镜像的名字
+		container_name: mysql # 容器名称
+		ports:
+			- 3306:3306
+		environment: 
+			MYSQL_ROOT_PASSWORD: 123456
+			TZ: Asia/Shanghai
+		volumes:
+			- /xxx/xxx:/xxx/xxx
+```
+
+**注意:** 通过dockerfile的方式启动容器, 第二次启动时, 不会重新用dockerfile构建镜像, 而是直接运行第一次构建的镜像。如果需要重新构建, 则可以使用`docker-compose build`
 
 
 
@@ -310,9 +429,25 @@ dockerfile是用来构建镜像的构建文件. 由一系列命令和参数构�
 **实现思路:** 
 
 1. `FROM centos`
-
 2. `ADD xxx.tar.gz`
 3. `Run`
 4. `ENV xxx xxx`
 5. `Expose xxx`
 6. `CMD xxx`
+
+
+
+### 2. Redis 自定义网络测试
+
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Redis网络实战.png)
+
+
+
+## X、补充
+
++ 在创建mysql容器时, 我们通过`docker run -e MYSQL_ROOT_PASSWORD=123456`来指定了mysql的登录密码。在mysql镜像的dockerfile中, 我们可以看到`ENV MYSQL_ROOT_PASSWORD ""` 的语句, 该语句定义了一个环境变量`MYSQL_ROOT_PASSWORD`, 我们在创建容器时通过`-e`指定的值, 就会被复制给该环境变量。
+
+    注意, 我们也可以把`ENV`理解成普通的属性, 当我们需要在创建容器时动态传递一些值, 就可以通过`-e`与`ENV`来实现。
+    
++ `docker ps`查看的只是当前运行的容器, 当容器退出时, 该命令无法查看到。此时应该使用`docker ps -a`查看所有的容器。
+

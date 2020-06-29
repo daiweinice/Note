@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grid响应式布局</title>
+</head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+  }
+  main {
+    width: 80vw;
+    background-color: pink;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /*通过媒体查询控制列数, 达到响应式的效果*/ /*不设置行数即可自动向下扩展行*/
+    justify-items: center;
+    row-gap: 30px;
+    padding: 20px;
+  }
+  section {
+    width: 95%;  /*宽度用百分比达到自动伸缩的目的*/
+    height: 200px; /*高度用px*/
+    border: 2px red solid;
+    background-color: antiquewhite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: black;
+    font-weight: 700;
+    font-size: 36px;
+  }
+
+</style>
+<body>
+  <main>
+    <section>1</section>
+    <section>2</section>
+    <section>3</section>
+    <section>4</section>
+    <section>5</section>
+    <section>6</section>
+    <section>7</section>
+    <section>8</section>
+    <section>9</section>
+    <section>10</section>
+  </main>
+</body>
+</html>
