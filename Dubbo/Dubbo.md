@@ -191,7 +191,7 @@ public class Consumer {
 
 ### 5. 注意事项
 
-1. 服务端需要实现接口, 同时消费者端也需要有相关接口的定义. 
+1. 服务端需要实现接口, 同时消费者端也需要有相关接口的定义, 且消费端的接口所在的包应该与服务端接口所在的包完全一致. 
 
 
 
@@ -210,7 +210,7 @@ public class Consumer {
     ```
 
 3. 在主程序中加上注解`@EnableDubbo`开启注解支持(包扫描), 也可以通过`dubbo.scan.base-packages`指定包路径
-4. 在服务端接口实现类上加上注解`@Service` (改注解是Dubbo的注解)
+4. 在服务端接口实现类上加上注解`@Service` (该注解是Dubbo的注解)
 5. 在消费者端将`@Autowired`替换为`@Reference`
 
 
@@ -233,7 +233,7 @@ Dubbo有三种配置方式, 其中按优先级配置应该是
 
 (2) XML配置
 
-(3) properties配置(在Spring Boot中在application.properties中配置, 在spring项目中在dubbo.properties中配置以替代在xml中配置, 一般公共的配置都可以在dubbo,properties中进行)
+(3) properties配置(在Spring Boot中在application.properties中配置, 在spring项目中在dubbo.properties中配置以替代在xml中配置, 一般公共的配置都可以在dubbo.properties中进行)
 
 
 

@@ -50,7 +50,7 @@ Spring从3.1开始定义了`org.springframework.cache.Cache`和`org.springframew
 1. **@Cacheable**
 
 ```java
-@EnableCaching
+@EnableCaching //可配置到配置类、主启动类
 public class UserService{
     @Autowired
     private UserDao userdao;
@@ -62,7 +62,7 @@ public class UserService{
 }
 
 /*
-	getUserById方法在第一次执行时会从数据库中查询数据, 方法返回值会保存到缓存中, 第二次调用该方法时, 只要key是一样的, 那么就不会再从数据库中查询而是直接从缓存中获取
+	getUserById方法在第一次执行时会从数据库中查询数据, 方法返回值会保存到缓存中, 第二次调用该方法时, 只要key是一样的, 那么就不会再从数据库中查询而是直接从缓存中获取。默认使用方法的参数类型及参数值作为key
 */
 
 /*
@@ -162,6 +162,7 @@ spring:
 ```
 
 3. 使用上述注解进行操作即可
+4. 若cacheNames为cachetest, key为1234, 则存储到redis中key为"cacheTest::1234"
 
 
 

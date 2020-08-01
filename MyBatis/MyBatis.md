@@ -2,11 +2,9 @@
 
 ## 一、MyBatis概述
 
-MyBatis是一个持久层框架, 用Java编写. 它封装了JDBC操作的很多细节, 使得开发者只需要关注sql语句本身, 而无需关注注册驱动, 创建连接等繁杂的过程.==它使用了ORM思想, 实现了结果集的封装.==
+MyBatis是一个持久层框架, 用Java编写. 它封装了JDBC操作的很多细节, 使得开发者只需要关注sql语句本身, 而无需关注注册驱动, 创建连接等繁杂的过程. 它使用了ORM思想, 实现了结果集的封装.
 
-ORM思想: Object Relational Mapping, 对象关系映射. 简单说, 就是将数据库中的实体类和实体属性, 和Java对象映射起来, 将查询结果转化为Java对象.
-
-
+**ORM**: Object Relational Mapping, 对象关系映射. 简单说, 就是将数据库中的实体类和实体属性, 和Java对象映射起来, 将查询结果转化为Java对象.
 
 ## 二、MyBatis入门案例
 
@@ -429,13 +427,13 @@ sqlSession对象关闭后或者调用clearCache()方法后, 缓存清空.
 
 当调用sqlSession的修改、添加、删除、commit()等方法后, 缓存清空
 
-==如果两次查询数据一致, 第二次通过sqlSession缓存获取到的数据对象与第一次查询获取的数据对象是同一个==
+如果两次查询数据一致, 第二次通过sqlSession缓存获取到的数据对象与第一次查询获取的数据对象是同一个
 
 #### 3. 二级缓存
 
 sqlSessionFactory对象缓存, 由同一个sqlSessionFactory对象创建的sqlSession共享该缓存.
 
-==当两次查询数据一致, 并通过二级缓存获取数据时, 第二次获取的数据对象和第一次不同==
+当两次查询数据一致, 并通过二级缓存获取数据时, 第二次获取的数据对象和第一次不同
 
 #### 4. 使用二级缓存
 
@@ -460,8 +458,6 @@ sqlSessionFactory对象缓存, 由同一个sqlSessionFactory对象创建的sqlSe
     ...
 </select>
 ```
-
-
 
 ## 十、MyBatis注解开发
 

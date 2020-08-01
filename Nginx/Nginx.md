@@ -4,9 +4,7 @@
 
 ### 1. Nginx简介
 
-> Nginx是一款由俄罗斯人开发的高性能的HTTP和反向代理web服务器。
->
-> Nginx是一款轻量级的Web 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器, 它的特点是占有内存小、并发能力强。
+> Nginx是一款轻量级的Web服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器, 它的特点是占有内存小、并发能力强。
 
 ![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Nginx简介.png)
 
@@ -21,7 +19,8 @@ services:
     ports:
       - 80:80
     volumes:
-      - /usr/local/docker-nginx/conf.d:/etc/nginx/conf.d # 注意这里两边都要用绝对路径
+      # 注意这里两边都要用绝对路径
+      - /usr/local/docker-nginx/conf.d:/etc/nginx/conf.d 
       - /usr/local/docker-nginx/log:/var/log/nginx
 ```
 

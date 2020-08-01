@@ -377,7 +377,7 @@ dockerfile是用来构建镜像的构建文件. 由一系列命令和参数构�
 
 ```yml
 # docker-compose.yml
-sersion: '3.1'
+version: '3.1'
 services: 
 	mysql:        # 服务名称
 		restart: always  # Docker启动就自动启动容器

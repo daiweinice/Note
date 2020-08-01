@@ -2,7 +2,7 @@
 
 ## 一、 Spring Boot简介
 
-> Spring Boot是Spring团队开发的全新框架. 其设计目的是用来简化Spring应用的初始搭建以及开发过程。该框架使用了特定的方式来进行配置，从而使开发人员不再需要定义样板化的配置。Spring Boot是整个Spring技术栈的大整合, 也是J2EE开发的一站式解决方案.
+> Spring Boot是Spring团队开发的全新框架. 其设计目的是用来简化Spring应用的初始搭建以及开发过程。该框架使用了特定的方式来进行配置，从而使开发人员不再需要定义样板化的配置(约定 > 配置)。Spring Boot是整个Spring技术栈的大整合, 也是J2EE开发的一站式解决方案.
 
 #### Spring Boot的优点:
 
@@ -198,6 +198,8 @@ public @interface EnableAutoConfiguration {
 Spring Boot在启动的时候从各依赖的META-INF/spring.factories中获取EnableAutoConfiguration指定的值，将这些值代表的自动配置类组件导入到容器中，自动配置组件就生效，帮我们进行自动配置工作.
 
 J2EE的整体整合解决方案和自动配置都在`spring-boot-autoconfigure.jar`中, 里面就是各种xxxAutoConfiguration.class
+
+![image-20200722090537398](images/%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90)
 
 
 

@@ -256,7 +256,7 @@ springboot 启动会扫描以下位置的application.properties或者application
 
 –classpath:/
 
-优先级由高到底，Spring Boot会同时加载这四个位置的配置文件, 如果配置内容有重复, 高优先级会覆盖掉低优先级
+优先级由高到底，Spring Boot会同时加载这四个位置的配置文件(互补配置), 如果配置内容有重复, 高优先级会覆盖掉低优先级
 
 #### 指定加载路径
 
@@ -355,6 +355,8 @@ Spring Boot提供了许多@Conditional的派生注解
 由上可知, 自动配置类的自动配置是有条件的, 只有符合@Conditional的条件才会自动配置
 
 我们可以在配置文件中配置`debug=true`, 项目启动后会打印自动配置报告, 列出有效的自动配置和无效的自动配置
+
+![image-20200722095221336](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/image-20200722095221336.png)
 
 #### 总结
 

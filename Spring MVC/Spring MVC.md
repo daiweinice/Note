@@ -31,7 +31,7 @@
 + 共同点
     + 它们都是表现层框架，都是基于MVC模型编写的。
     + 它们的底层都离不开原始ServletAPI。
-    + 它们处理请求的机制都是一个==核心控制器==。
+    + 它们处理请求的机制都是一个核心控制器。
 + 不同点:
     + Spring MVC 的入口是 Servlet, 而 Struts2 是 Filter
     + Spring MVC 是基于方法设计的，而Struts2是基于类，Struts2每次执行都会创建一个动作类。所以Spring MVC 会稍微比 Struts2 快些。
@@ -138,7 +138,7 @@ index.jsp
 
 ## 二、Spring MVC组件介绍
 
-<img src="images/Spring MVC组件.bmp"  />
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Spring MVC 执行流程.png)
 
 + 前端控制器: 用户请求到达前端控制器，它就相当于mvc模式中的c. DispatcherServlet是整个流程控制的中心，由它调用其它组件处理用户的请求，DispatcherServlet的存在降低了组件之间的耦合性。
 + 处理器映射器: HandlerMapping负责根据用户请求找到Handler(处理器, 也就是处理请求的方法)，SpringMVC提供了不同的映射器实现不同的映射方式，例如：配置文件方式，实现接口方式，注解方式等。
@@ -147,7 +147,7 @@ index.jsp
 + 视图解析器: ViewResolver负责将处理结果生成View视图，ViewResolver首先根据逻辑视图名解析成物理视图名即具体的页面地址，再生成View视图对象，最后对View进行渲染将处理结果通过页面展示给用户。
 + 视图: SpringMVC框架提供了很多的View视图类型的支持，包括：jstlView、freemarkerView、pdfView等。我们最常用的视图就是jsp。一般情况下需要通过页面标签或页面模版技术将模型数据通过页面展示给用户，需要由程序员根据业务需求开发具体的页面。
 
-==其中, 处理器映射器、处理器适配器在配置了`<mvc:annotation-driven>`后会自动加载==
+其中, 处理器映射器、处理器适配器在配置了`<mvc:annotation-driven>`后会自动加载
 
 
 
@@ -294,7 +294,7 @@ post请求传递参数会出现中文乱码的问题, 这时候需要通过Filte
 
 #### 4. @RequestBody
 
-+ 作用：用于获取请求体的内容(只有post方法才有请求体)
++ 作用：用于获取请求体的内容(只有post方法才有请求体)(post请求必须要使用该注解才能获取到数据)
 + 用法: ...(@RequestBody String body)  将请求体信息传给body参数
 
 #### 5. @CookieValue
@@ -370,7 +370,7 @@ post请求传递参数会出现中文乱码的问题, 这时候需要通过Filte
     }
     
     @ModelAttribute
-    public void pre_get(String name, Maper<String, User> map){
+    public void pre_get(String name, Map<String, User> map){
         User u = new User;
         u.setName(name);
         u.setAge(age);

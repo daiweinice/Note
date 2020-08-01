@@ -63,14 +63,14 @@ Zookeeper的数据模型, 在结构上与标准文件系统类似, 为树形结�
 
 2. 永久节点. 
 
-3. 序列化节点. 创建的时候, Znode的名字后面会追加一个不断增加的序列号, 序列号对于其父节点是唯一的, 该**序列号可以表示子节点创建的先后顺序**.
+3. 顺序节点. 创建的时候, Znode的名字后面会追加一个不断增加的序列号, 序列号对于其父节点是唯一的, 该**序列号可以表示子节点创建的先后顺序**.
 
 4. 各类型节点英文名:
 
     PERSISTENT：永久节点
     EPHEMERAL：临时节点
-    PERSISTENT_SEQUENTIAL：永久节点、序列化
-    EPHEMERAL_SEQUENTIAL：临时节点、序列化
+    PERSISTENT_SEQUENTIAL：永久节点、顺序(序列化)
+    EPHEMERAL_SEQUENTIAL：临时节点、顺序(序列化)
 
 #### (3) 节点属性
 
@@ -158,7 +158,7 @@ Linux安装Zookeeper: https://www.jianshu.com/p/ed6ec88b01c3
 + `zkCli.sh -server ip/hostname` 客户端连接
 + `create [-s] [-e] path data acl  `创建节点. -s表示序列节点(默认为非序列)、-e表示临时节点(默认为永久)
 + `ls path [watch] ` 查看节点的所有一级子节点. 加上watch字段表示订阅.
-+ `get path [watch]` 查看指定节点的数据内容和属性信息
++ `get path [watch]` 查看指定节点的数据内容
 + `ls2 path [watch]` 查看指定节点属性信息
 + `set path data [version] ` 更新节点
 + `delete path [version]` 删除节点, 如果该节点有子节点, 会报错
@@ -257,6 +257,8 @@ public static void main(String[] args) throws Exception {
 3. 数据 id 相同的情况下，服务器 id 大的胜出
 
 根据上述规则, 选举出leader.
+
+![img](images/%E9%80%89%E4%B8%BE%E6%9C%BA%E5%88%B6)
 
 
 

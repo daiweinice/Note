@@ -539,6 +539,8 @@ public class BasicErrorController extends AbstractErrorController {
 5. message：异常消息
 6. errors：JSR303数据校验错误对象
 
+![image-20200722111421097](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/image-20200722111421097.png)
+
 #### 2. 自定义错误页面
 
 1. 如果template目录下有对应错误页面, 则使用该错误页面. 错误页面应该放在`templates/error`目录下, 名字为状态码. 如: 404.html、4xx.html, Spring Boot就会根据相应错误跳转到对应页面.

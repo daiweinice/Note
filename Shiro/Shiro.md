@@ -182,6 +182,8 @@ shiro.redirectUrl=/
 /user/login = anon
 #需要认证(登录)
 /user/query = authc
+#认证或记住我
+/index.html = user
 #需要登录且同时拥有admin和daiwei两个角色(多个参数需要用"")
 /user/delete = authc,roles["admin", "daiwei"]
 #需要登录且拥有user:search权限(如有多个权限设置需要同时满足才算验证成功)
@@ -248,7 +250,9 @@ Shiro标签适用于jsp页面, 使用时需要导入标签库。
 
 #### (1) 数据库建表
 
-涉及5个表, 用户表、角色表、权限表、用户角色表、角色权限表
+数据库表根据自己的业务需求自行设计
+
+本次测试涉及5个表, 用户表、角色表、权限表、用户角色表、角色权限表
 
 #### (2) 自定义Realm
 
@@ -304,7 +308,7 @@ securityManager.realms=$realm1,$realm2
 
 ### 5. 记住我
 
-在用户登录后, 可以将用户名存在cookie中, 下次访问时, 可以先不登陆, 就可以识别用户身份。
+在用户登录后, 可以将用户名存在cookie中, 下次访问时, 可以先不登陆, 就可以访问 (只能访问路径权限规则为user的路径, user表示认证了或记住我可以访问)。
 
 在确实需要身份认证时, 再要求用户登录, 这样可以提高用户体验。
 
@@ -317,7 +321,7 @@ token.setRememberMe(true);
 subjet.login(token);
 ```
 
-默认cookie的名字为rememberMe保存时间为365天。
+默认cookie的名字为rememberMe, 保存时间为365天。
 
 #### (2) 自定义cookie
 
@@ -413,7 +417,9 @@ public class MySessionListener extends SessionListenerAdapter{
 
 #### (3) session检测
 
-用户没有主动退出, 只是关闭浏览器, 则session是否过期无法获知, 也就不能停止session。为此shiro提供了session的检测机制, 可以i定时发起检测, 识别session过期并停止session。
+用户没有主动退出, 只是关闭浏览器, 则session是否过期无法获知, 也就不能停止session。为此shiro提供了session的检测机制, 可以定时发起检测, 识别session过期并停止session。
+
+注意: 这里说的关闭浏览器, session过期无法获知, 是因为关闭浏览器后, 对应session并不是立即清除的, 一个session默认在30分钟无操作会被清除, 当用户关闭浏览器后(对应保存sessionid的cookie会被删除), 下一次打开的网页会有一个新的session(创建一个新的保存新sessionid的cookie), 而原来的session虽然已无实际用处但是会保留30分钟然后被清除。使用了session检测, 那么会周期性检测过期的session, 直接删除。
 
 ```xml
 <bean id="sessionManager" class="xxx.DefaultWebSessionManager">

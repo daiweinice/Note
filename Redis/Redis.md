@@ -652,18 +652,18 @@ Redis通过命令 `watch key1 [key2]`来实现对key的监听, **监听的key在
 
 在软件架构中，发布订阅是一种消息范式，消息的发送者（称为发布者）不会将消息直接发送给特定的接收者（称为订阅者）。而是将发布的消息分为不同的类别，无需了解哪些订阅者（如果有的话）可能存在。同样的，订阅者可以表达对一个或多个类别的兴趣，只接收感兴趣的消息，无需了解哪些发布者（如果有的话）存在。
 
-
+redis的发布订阅是多个cli订阅server(单机或集群)的一个channel
 
 #### 2. Redis发布和订阅
 
-| 命令                                         | 描述                             |
-| -------------------------------------------- | -------------------------------- |
-| SUBSCRIBE channel [channel]                  | 订阅指定的一个或多个频道的信息   |
-| PSUBSCRIBE pattern [channel]                 | 订阅一个或多个符合给定模式的频道 |
-| PUBLISH channel message                      | 将信息发送到指定的频道           |
-| UNSUBSCRIBE channel [channel]                | 退订指定的频道                   |
-| PUNSUBSCRIBE pattern [pattern]               | 退订所有给定模式的频道           |
-| PUBSUB subcommand [argument [argument ...\]] | 查看订阅与发布系统状态           |
+| 命令                                                         | 描述                             |
+| ------------------------------------------------------------ | -------------------------------- |
+| SUBSCRIBE channel [channel]                                  | 订阅指定的一个或多个频道的信息   |
+| PSUBSCRIBE pattern [channel]                                 | 订阅一个或多个符合给定模式的频道 |
+| PUBLISH channel message                                      | 将信息发送到指定的频道           |
+| UNSUBSCRIBE channel [channel]                                | 退订指定的频道                   |
+| PUNSUBSCRIBE pattern [pattern]                               | 退订所有给定模式的频道           |
+| PUBSUB subcommand(CHANNELS / NUMSUB / NUMPAT) [argument [argument ...\]] | 查看订阅与发布系统状态           |
 
 
 
@@ -799,3 +799,4 @@ key的命名: pnumber.count记录一天发送个数、pnumber.code记录验证�
 注意, Redis的每一个操作具有原子性, 但是如果一个get操作+一个set操作合在一起是不具有原子性的。也就是说之所以能用Redis实现一个基本的秒杀系统是因为incr操作包含了get和set的功能, 且加在一起是原子性的, 这样就就解决了超卖问题。但是如果不用incr而是用get+set, 就和普通多线程一样存在超卖问题。
 
 **原子性定义:** 一个或多个操作，要么全部执行且在执行过程中不被任何因素打断，要么全部不执行。
+

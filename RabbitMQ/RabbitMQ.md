@@ -6,7 +6,7 @@
 
 ### 2. 消息中间件
 
-消息中间件利用高效可靠的消息传递机制进行==平台无关==的数据交流，并基于数据通信来进行分布式系统的集成。通过提供消息传递和消息排队模型，它可以在分布式环境下扩展进程间的通信。对于消息中间件，常见的角色大致也就有Producer（生产者）、Consumer（消费者）
+消息中间件利用高效可靠的消息传递机制进行平台无关的数据交流，并基于数据通信来进行分布式系统的集成。通过提供**消息传递**和**消息排队**模型，它可以在分布式环境下扩展进程间的通信。对于消息中间件，常见的角色大致也就有Producer（生产者）、Consumer（消费者）
 
 ### 3. 消息中间件常见应用场景
 
@@ -58,7 +58,7 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 
 #### (2) AMQP模型
 
-![](images/AMPQ模型.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/AMPQ模型.png)
 
 #### (3) AMQP核心概念
 
@@ -66,7 +66,7 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 + **Connection:** 连接, 应用程序与Broker的网络连接
 + **Channel:** 网络信道, 几乎所有的操作都在Channel中进行, Channel是进行消息读写的通道. 客户端可建立多个Channel, 每个Channel代表一个会话任务.
 + **Message:** 消息, 服务器和应用程序之间传送的数据. 由Properties和Body组成. Properties可以对消息进行修饰, 比如消息的优先级、延迟等高级特性; Body就是消息体内容.
-+ **Virtual host:** 虚拟地址, 用于进行==逻辑隔离==, 最上层的消息路由. 一个Virtual host里可以由若干个Exchange和Queue, 同一个Virtual host里面不能有相同名称的Exchange或Queue
++ **Virtual host:** 虚拟地址, 用于进行逻辑隔离, 最上层的消息路由. 一个Virtual host里可以由若干个Exchange和Queue, 同一个Virtual host里面不能有相同名称的Exchange或Queue
 + **Exchange:** 交换机, 接收消息, 根据路由键转发消息到绑定的队列(注意队列要与交换机绑定).
 + **Binding:** Exchange和Queue之间的虚拟连接, Binding中可以包含路由键(routing key), 这个路由键就是用来匹配Queue和Message的.
 + **Routing key:** 一个路由规则, Virtual host可用它确定如何路由一个特定消息. 比如在Direct Exchange中, 当队列的Routing Key与消息的Routing Key一致时, 交换机就会将消息存入该队列.
@@ -74,7 +74,7 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 
 #### (4) RabbitMQ架构图
 
-![](images/RabbitMQ架构图.jpg)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/RabbitMQ架构图.jpg)
 
 
 
@@ -124,7 +124,7 @@ Erlang语言最初在于交换机领域的架构模式, 它有着和原生Socket
 
 RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`、`rabbitmq-plugins`. 其中`rabbitmqctl`功能最丰富, `rabbitmq-plugins`用于插件管理.
 
-==另外, 大多数命令行能完成的操作, 在图形化管控台中也可以完成.==
+另外, 大多数命令行能完成的操作, 在图形化管控台中也可以完成.
 
 + `rabbitmqctl start_app` : 开启应用
 + `rabbitmqctl stop_app` : 关闭应用
@@ -279,7 +279,7 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
 
 这个过程中会添加一个分布式定时任务, 当定时时间到时, 会检查消息数据库中消息的状态, 如果状态为0则重新给Broker发送一次消息, 当然重发也应该有次数限制.
 
-![](images/可靠性投递 1.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/可靠性投递 1.png)
 
 
 
@@ -295,7 +295,7 @@ CallBack service同时还负责监听延迟消息, 监听到延迟消息后, 会
 
 这种方法与第一种方法相比, 减少了发送消息前数据库的写入次数, 提高了并发量和效率. 消息入库被单独成一个服务, 这个服务是作为一个补充的服务, 并不在核心链路上, 这样的解耦使得在高并发情况下核心链路的并发量得到提高.
 
-![](images/可靠性投递 2.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/可靠性投递 2.png)
 
 
 
@@ -472,7 +472,7 @@ DLX, Dead-Letter-Exchange
 
 利用DLX, 当消息在一个队列中变成死信(dead message)之后, 它能被重新publish到另一个Exchange, 这个Exchange就是DLX.
 
-==死信队列本质就是一个普通的Exchange.==
+死信队列本质就是一个普通的Exchange.
 
 **消息进入死信队列的情况:**
 
