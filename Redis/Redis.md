@@ -612,11 +612,11 @@ Redis事务通过三个命令完成.
 
 1. **业务中的Redis问题**
 
-![](images/事务冲突问题.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/事务冲突问题.png)
 
 2. **解决方案**
 
-![](images/乐观锁与悲观锁.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/乐观锁与悲观锁.png)
 
 当一个命令执行成功后, 数据版本会发生改变, 此时其他并发操作的版本与数据版本不一致, 这些并发操作就会被取消.
 

@@ -33,7 +33,7 @@ public class ResourceProperties implements ResourceLoaderAware {...}
 
 导入的jar包结构如下:
 
-![](images/webjars.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/webjars.png)
 
 通过` /webjars/**` 访问相关资源, 如: `localhost:8080/webjars/jquery/3.3.1/jquery.js`
 
@@ -65,7 +65,7 @@ spring.resources.static-locations=[classpath:/css/, classpath:/js/]
 
 > 模板引擎（这里特指用于Web开发的模板引擎）是为了使用户界面与业务数据（内容）分离而产生的，它可以生成特定格式的文档，用于网站的模板引擎就会生成一个标准的HTML文档。
 
-![](images/模板引擎.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/模板引擎.png)
 
 Jsp、Velocity、Freemarker、Thymleaf等都是模板引擎. 在Spring Boot项目中, 由于项目是以jar包的形式存在的, 所以不支持Jsp模板引擎. 我们使用Spring Boot推荐的Thymleaf作为模板引擎.
 
@@ -169,7 +169,7 @@ public class Controller{
 
 1. th:xxx
 
-![](images/Thymleaf 语法.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Thymleaf 语法.png)
 
 2. 表达式
 

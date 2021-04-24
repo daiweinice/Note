@@ -28,7 +28,7 @@ Docker是基于Go语言实现的云开源项目。Docker的主要目标是“Bui
 
 虚拟机原理图:
 
-![](images/传统虚拟机.png).
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/传统虚拟机.png).
 
 #### (2)容器虚拟技术
 
@@ -36,7 +36,7 @@ Docker是基于Go语言实现的云开源项目。Docker的主要目标是“Bui
 
 容器虚拟技术原理图:
 
-![](images/Docker 容器.png).
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Docker 容器.png).
 
 ### 5. Docker的特点
 
@@ -67,7 +67,7 @@ Docker Hub上面有许多的镜像, 每一个镜像也有帮助文档, 如果对
 
 ### 7. Docker架构
 
-![](images/Docker 架构图.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Docker 架构图.png)
 
 ### 8. Hello World
 
@@ -79,7 +79,7 @@ Docker Hub上面有许多的镜像, 每一个镜像也有帮助文档, 如果对
 
 docker run的执行细节:
 
-![](images/Docker run.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Docker run.png)
 
 ### 9. Docker底层原理
 
@@ -96,7 +96,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
 
 图解: 
 
-![](images/Docker与VM.JPG)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Docker与VM.JPG)
 
 
 
@@ -161,7 +161,7 @@ Docker是一个Client-Server结构的系统，Docker守护进程运行在主机�
 
 ### 4. 命令图集
 
-![](images/Docker命令.JPG)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Docker命令.JPG)
 
 **Tips:** Docker也有可视化工具Portainer。
 

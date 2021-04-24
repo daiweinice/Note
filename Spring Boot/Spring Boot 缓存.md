@@ -12,7 +12,7 @@ JSR 107是一个缓存规范(类似于SLF4J), 它提供了5个核心接口, 分�
 
 结构图如下:
 
-![](images/JSR 107.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/JSR 107.png)
 
 
 
@@ -39,7 +39,7 @@ Spring从3.1开始定义了`org.springframework.cache.Cache`和`org.springframew
 
 图解:
 
-![](images/Spring缓存抽象图解.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Spring缓存抽象图解.png)
 
 由图可知, 每一个CacheManager可以管理多个Cache, 每一个Cache可以存储多个key-value
 

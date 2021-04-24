@@ -201,7 +201,7 @@ Seata 是一款开源的分布式事务解决方案，致力于提供高性能�
 
 管理分支事务处理的资源，与TC交谈以注册分支事务和报告分支事务的状态，并驱动分支事务提交或回滚。RM可以简单理解为事务参与方, 即数据库。
 
-![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/seata处理流程.png)
+![TC/TM/RM](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/seata处理流程.png)
 
 + TM 开启分布式事务 (TM 向 TC 注册全局事务记录)
 + 按业务场景, 编排数据库、服务等事务内资源 (RM 向 TC 汇报资源准备状态)

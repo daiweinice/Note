@@ -258,7 +258,7 @@ public static void main(String[] args) throws Exception {
 
 根据上述规则, 选举出leader.
 
-![img](images/%E9%80%89%E4%B8%BE%E6%9C%BA%E5%88%B6)
+![img](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/选举机制)
 
 
 

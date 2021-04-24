@@ -9,7 +9,7 @@
 - **为用户提供一个与系统交互的操作界面 ；**
 - **操作系统分内核与外壳（我们可以把外壳理解成围绕着内核的应用程序，而内核就是能操作硬件的程序）。**
 
-![操作系统分内核与外壳](images/操作系统分内核和外壳.jpg)
+![操作系统分内核与外壳](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/操作系统分内核和外壳.jpg)
 
 ### 1.2 操作系统简单分类
 
@@ -39,7 +39,7 @@
 **Linux根据原生程度，分为两种：**
 
 1. **内核版本：** Linux不是一个操作系统，严格来讲，Linux只是一个操作系统中的内核。内核是什么？内核建立了计算机软件与硬件之间通讯的平台，内核提供系统服务，比如文件管理、虚拟内存、设备I/O等；
-2. **发行版本：** 一些组织或公司在内核版基础上进行二次开发而重新发行的版本。Linux发行版本有很多种（ubuntu和CentOS用的都很多，初学建议选择CentOS），如下图所示： ![Linux发行版本](images/Linux发行版)
+2. **发行版本：** 一些组织或公司在内核版基础上进行二次开发而重新发行的版本。Linux发行版本有很多种（ubuntu和CentOS用的都很多，初学建议选择CentOS），如下图所示： ![Linux发行版本](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Linux发行版)
 
 
 
@@ -53,11 +53,11 @@
 
 ### 3.2 文件类型与目录结构
 
-**Linux支持5种文件类型 ：** ![文件类型](images/文件类型)
+**Linux支持5种文件类型 ：** ![文件类型](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/文件类型)
 
 **Linux的目录结构如下：**
 
-Linux文件系统的结构层次鲜明，就像一棵倒立的树，最顶层是其根目录： ![Linux的目录结构](images/Linux目录结构)
+Linux文件系统的结构层次鲜明，就像一棵倒立的树，最顶层是其根目录： ![Linux的目录结构](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Linux目录结构)
 
 **常见目录说明：**
 
@@ -183,11 +183,11 @@ f：指定文件名
 
 示例：在随意某个目录下`ls -l`
 
-![img](images/文件权限)
+![img](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/文件权限)
 
 第一列的内容的信息解释如下：
 
-![img](images/文件权限 2.png)
+![img](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/文件权限 2.png)
 
 > 下面将详细讲解文件的类型、Linux中权限以及文件有所有者、所在组、其它组具体是什么？
 
@@ -245,7 +245,7 @@ f：指定文件名
 
 **`chmod u=rwx,g=rw,o=r aaa.txt`**
 
-![img](images/文件权限 3.png)
+![img](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/文件权限 3.png)
 
 上述示例还可以使用数字表示：
 

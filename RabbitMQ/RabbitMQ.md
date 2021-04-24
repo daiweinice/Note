@@ -157,7 +157,7 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
 
      比如消息Routing Key为user.name, 那么其可以发送到Routing Key为user.#的队列中
 
-    ![](images/Topic Exchage.png)
+    ![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Topic Exchage.png)
 
 
 
@@ -165,7 +165,7 @@ RabbitMQ中的命令有三种开头, 分别是`rabbitmq-server`、`rabbitmqctl`�
 
     无需Routing Key, 发送到Fanout Exchange的消息, 会转发给其所有绑定的队列.
 
-    ![](images/Fanout Exchage.png)
+    ![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Fanout Exchage.png)
 
 ### 3. RabbitMQ Java API
 
@@ -382,7 +382,7 @@ CallBack service同时还负责监听延迟消息, 监听到延迟消息后, 会
 
     根据ID规则路由到不同的数据库, 是为了解决单个数据库负载过大的情况。
 
-    ![](images/消息幂等性设计.png)
+    ![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/消息幂等性设计.png)
 
 + 利用Redis原子性实现
 
@@ -393,7 +393,7 @@ CallBack service同时还负责监听延迟消息, 监听到延迟消息后, 会
 
 ### 3. Confirm确认消息机制
 
-![](images/confirm机制.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/confirm机制.png)
 
 当生产者发送了消息给Broker后, Broker会发送一个confirm消息给生产者, 此时生产者会监听这个消息, 如果收到表示成功投递.
 
@@ -401,7 +401,7 @@ Confirm确认消息机制, 需要通过代码手动开启. 详情见代码示例
 
 ### 4. Return机制
 
-![](images/Return机制.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Return机制.png)
 
 当生产者产生的消息, 在发送给Broker时无法匹配到对应的队列, 那么就会给生产者发送一个Return消息.
 
@@ -568,19 +568,19 @@ RabbitMQ与Spring Boot整合后, 主要配置都是通过`applcation.properties`
 
 一个节点作为主节点, 一个节点作为从节点, 当主节点发生故障时从节点代替主节点工作, 在主节点正常的情况下从节点不提供服务。适合数据量小的应用场景。
 
-![](images/集群架构-主备模式.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/集群架构-主备模式.png)
 
 #### (2) 远程模式
 
 当一个节点的消息队列业务繁忙时可以调用远程另外一个节点处理业务。可以有效缓解单个节点的压力。
 
-![](images/集群架构-远程模式1.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/集群架构-远程模式1.png)
 
 #### (3) 镜像模式
 
 多个节点的镜像队列之间共享消息, 保持消息同步
 
-![](images/集群架构-镜像模式.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/集群架构-镜像模式.png)
 
 #### (4) 多活模式
 
@@ -588,7 +588,7 @@ RabbitMQ与Spring Boot整合后, 主要配置都是通过`applcation.properties`
 
 注意: Federation插件是进行节点与节点之间的数据同步而不是节点集之间。如果节点集中使用镜像模式, 则只需要黄色集中一个节点与绿色集中一个节点通过Federation保持同步即可。
 
-![](images/集群架构-多活模式.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/集群架构-多活模式.png)
 
 ### 2. HAProxy+Keepalived
 
@@ -630,9 +630,9 @@ SET化架构的核心是将核心业务作为一个单元, 并部署多个这样
 
 如: 美团将其外卖业务作为一个单元, 部署到各个城市。用户的服务请求会根据其所在地路由到当地的单元进行处理。而类似如修改头像等非核心业务则部署在中心单元, 全国所有用户的修改头像请求都在中心单元处理。
 
-![](images/单元化架构.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/单元化架构.png)
 
-![](images/单元化架构1.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/单元化架构1.png)
 
 **注意:**
 
@@ -646,25 +646,25 @@ SET化架构的核心是将核心业务作为一个单元, 并部署多个这样
 
 ### 1. MQ架构设计方案
 
-![](images/MQ组件架构设计.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/MQ组件架构设计.png)
 
 ### 2. 几种消息发送模式
 
 #### (1) 迅速消息发送
 
-![](images/迅速消息发送.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/迅速消息发送.png)
 
 #### (2) 确认消息发送
 
 消息入库, 业务入库。通过定时任务检查数据库中消息状态, 实现可靠性投递。
 
-![](images/确认消息发送.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/确认消息发送.png)
 
 #### (3) 批量消息发送
 
 将消息打包成集合, 批量发送。
 
-![](images/批量消息发送.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/批量消息发送.png)
 
 #### (4) 延迟消息发送
 
@@ -676,7 +676,7 @@ SET化架构的核心是将核心业务作为一个单元, 并部署多个这样
 
 消费者每接收到一条消息就将其入库(顺序消息都具有同一会话ID), 在消息入库的同时给自身发送一个延迟消息, 延迟时间到后检查是否已经收到所有的消息, 如果全收到则顺序进行业务处理, 反之则根据需求进行补偿机制。
 
-![](images/顺序消息发送.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/顺序消息发送.png)
 
 #### (6) 事务消息发送
 
@@ -690,6 +690,6 @@ SET化架构的核心是将核心业务作为一个单元, 并部署多个这样
 
 重写`DataSourceTransactionManager`的方法就是继承它并改写相关方法
 
-![](images/重写DataSourceTransactionManager.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/重写DataSourceTransactionManager.png)
 
-![](images/事务消息发送.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/事务消息发送.png)

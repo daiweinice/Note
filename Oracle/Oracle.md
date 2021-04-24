@@ -28,7 +28,7 @@ Oracle数据库是数据的物理存储。这就包括（数据文件ORA或者DB
 
 #### 6. 体系结构图
 
-![1568426487683](images/Oracle体系结构)
+![1568426487683](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Oracle体系结构)
 
 
 

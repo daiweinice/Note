@@ -6,7 +6,7 @@
 
 ### 2. Shiro功能概述
 
-![](images/Shiro功能图.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Shiro功能图.png)
 
 + **Authentication:** 身份认证/登录
 + **Authorization:** 权限验证
@@ -18,7 +18,7 @@
 
 ### 3. Shiro组件
 
-![](images/Shiro架构.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Shiro架构.png)
 
 + **Subject:** 代表当前用户, 应用代码直接交互对象就是Subject, 只要得到了Subject对象就可以做绝大多数shiro操作. Subject会将所有的交互都委托给SecurityManager, 但Subject是安全管理中直接操作的对象。
 + **SecurityManager:** 管理所有的Subject, 是Shiro的核心。
@@ -40,7 +40,7 @@ RBAC模型有三个主体, **用户、角色、权限**。
 
 ### 5. Shiro架构
 
-![](images/Shiro架构.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Shiro架构.png)
 
 ## 二、Shiro入门
 
@@ -131,7 +131,7 @@ Web项目集成Shiro后, 所有的请求都会先进入ShiroFilter处理, ShiroF
 
 注意: 并不是每一个请求都会依次经过过滤器1、过滤器2...而是会依次遍历过滤器, 选择与请求路径相匹配的过滤器进行验证。
 
-![](images/Shiro Web集成工作模式.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Shiro Web集成工作模式.png)
 
 
 

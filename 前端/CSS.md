@@ -1,15 +1,3 @@
-+ ```css
-    span::before {
-    	content: '⇰'; /*content必须设置, 如果没有内容则设置为''*/
-    	color: red;
-    }
-    
-    h2::before {
-    	content: attr(title);
-    }
-    <h2 title="后盾人">houdunren.com</h2>
-    ```
-    
 + `cursor: pointer `当鼠标移动上去时出现小手
 
 + `flex: 1`、`grid-template-rows: 100px 1fr 100px`可用于自适应填充

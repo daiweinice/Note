@@ -43,7 +43,7 @@ public class HelloWorld {
 
 实现图解:
 
-![](images/SLF4J.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/SLF4J.png)
 
 SLF4J作为抽象层, 它与logback可以直接连接, 而和log4j等实现层框架的连接需要一个适配器.因为这些框架出现时间较早, 在开发的时候还没有出现SLF4J.
 
@@ -53,15 +53,15 @@ SLF4J作为抽象层, 它与logback可以直接连接, 而和log4j等实现层�
 
 **解决办法:** 将这些日志框架的jar包替换掉, 替换的jar包既可以使框架正常使用, 又可以使它们都使用SLF4J+logback
 
-![](images/解决各框架日志不同问题.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/解决各框架日志不同问题.png)
 
 Spring Boot已经为我们解决了这个问题.
 
-![](images/Spring Boot日志框架依赖结构.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/Spring Boot日志框架依赖结构.png)
 
 👆由上图可知, Spring Boot导入了所有相关的替换包. 下图是这些替换包的结构👇
 
-![](images/狸猫换太子.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/狸猫换太子.png)
 
 可以看到这些替换包里面的包名依然是原日志框架的包名, 但是这只是为了让依赖该种日志框架的框架能够正常使用, 包里的具体实现已经变成了SLF4J+logback日志框架的实现了.
 

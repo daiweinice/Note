@@ -16,7 +16,7 @@
 
 简单来说“Shell编程就是对一堆Linux命令的逻辑化处理”。
 
-W3Cschool 上的一篇文章是这样介绍 Shell的，如下图所示。 [![什么是 Shell？](images/什么是shell.png)
+W3Cschool 上的一篇文章是这样介绍 Shell的，如下图所示。 [![什么是 Shell？](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/什么是shell.png)
 
 学习任何一门编程语言第一件事就是输出HelloWord了！下面我会从新建文件到shell代码编写来说下Shell 编程如何输出Hello World。
 
@@ -38,7 +38,7 @@ shell中 # 符号表示注释。**shell 的第一行比较特殊，一般都会�
 
 (4) 运行脚本:`./helloworld.sh` 。（注意，一定要写成 `./helloworld.sh` ，而不是 `helloworld.sh` ，运行其它二进制的程序也一样，直接写 `helloworld.sh` ，linux 系统会去 PATH 里寻找有没有叫 helloworld.sh 的，而只有 /bin, /sbin, /usr/bin，/usr/sbin 等在 PATH 里，你的当前目录通常不在 PATH 里，所以写成 `helloworld.sh` 是会找不到命令的，要用`./helloworld.sh` 告诉系统说，就在当前目录找。）
 
-![shell 编程Hello World](images/hello world.png).
+![shell 编程Hello World](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/hello world.png).
 
 
 
@@ -70,7 +70,7 @@ echo $hello
 echo  "helloworld!"
 ```
 
-![使用自己定义的变量](images/使用自定义的变量.png).
+![使用自己定义的变量](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/使用自定义的变量.png).
 
 **Shell 编程中的变量名的命名的注意事项：**
 
@@ -228,7 +228,7 @@ Shell 编程支持下面几种运算符
 
 ### 1. 算数运算符
 
-![算数运算符](images/算数运算符.png)
+![算数运算符](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/算数运算符.png)
 
 我以加法运算符做一个简单的示例（注意：不是单引号，是反引号）：
 
@@ -244,7 +244,7 @@ echo "Total value : $val"
 
 关系运算符只支持数字，不支持字符串，除非字符串的值是数字。
 
-![shell关系运算符](images/shell关系运算符.png)
+![shell关系运算符](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/shell关系运算符.png)
 
 通过一个简单的示例演示关系运算符的使用，下面shell程序的作用是当score=100的时候输出A否则输出B。
 
@@ -268,7 +268,7 @@ B
 
 ### 3. 逻辑运算符
 
-![逻辑运算符](images/逻辑运算符.png)
+![逻辑运算符](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/逻辑运算符.png)
 
 示例：
 
@@ -281,13 +281,13 @@ echo $a;
 
 ### 4. 布尔运算符
 
-![布尔运算符](images/布尔运算符.png)
+![布尔运算符](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/布尔运算符.png)
 
 这里就不做演示了，应该挺简单的。
 
 ### 5. 字符串运算符
 
-![ 字符串运算符](images/字符串运算符.png)
+![ 字符串运算符](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/字符串运算符.png)
 
 简单示例：
 
@@ -311,7 +311,7 @@ a 不等于 b
 
 ### 6. 文件相关运算符
 
-![文件相关运算符](images/文件相关运算符.png)
+![文件相关运算符](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/文件相关运算符.png)
 
 使用方式很简单，比如我们定义好了一个文件路径`file="/usr/learnshell/test.sh"` 如果我们想判断这个文件是否可读，可以这样`if [ -r $file ]` 如果想判断这个文件是否可写，可以这样`-w $file`，是不是很简单。
 

@@ -131,11 +131,11 @@ public class Test{
 
 1. 三种设计模式
 
-![](images/入门案例的三种设计模式.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/入门案例的三种设计模式.png)
 
 2. 流程分析
 
-![](images/入门案例流程分析.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/入门案例流程分析.png)
 
 
 
@@ -143,7 +143,7 @@ public class Test{
 
 #### 1. 开发流程图
 
-![](images/自定义mybatis开发流程图.png)
+![](https://blog-1258617239.cos.ap-chengdu.myqcloud.com/blog_images/自定义mybatis开发流程图.png)
 
 
 
